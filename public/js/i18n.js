@@ -6,12 +6,19 @@
  * with # for the formatted number. Options may nest variables. A key missing
  * in the active language falls back to English, then to the key itself.
  *
- * Language choice: 'en', 'id' or 'system' (the default), saved on the
- * device under localStorage 'turnly.lang'. 'system' means the viewer's
- * Homeroom locale when set (usernode.getUserLocale), else the device
- * language, else English; only the language subtag matters ("id-ID" -> id,
- * anything else -> en). A ?lang=en|id URL parameter wins for this page load
- * only and is never saved.
+ * Language choice, in order: the ?lang=en|id URL parameter wins for this
+ * page load only and is never saved; then the user's profile language
+ * (user-profile.js, localStorage 'turnly.user' — its `language` field maps
+ * one-to-one onto the users.language column planned for the backend stage:
+ * 'en' | 'id' | null, null = follow system); then the device-wide
+ * preference saved under localStorage 'turnly.lang' ('en', 'id' or
+ * 'system' — the setting the profile layer replaced, kept as the fallback
+ * for devices that saved it before the profile existed); then 'system':
+ * the viewer's Homeroom locale when set (usernode.getUserLocale), else the
+ * device language, else English; only the language subtag matters
+ * ("id-ID" -> id, anything else -> en). The picker writes BOTH layers, so
+ * they only ever disagree on a device that saved 'turnly.lang' before the
+ * profile existed.
  *
  * Also loadable as a CommonJS module for the Node tests.
  */
@@ -31,6 +38,8 @@
     en: require('./messages/en.js'),
     id: require('./messages/id.js'),
   };
+  // The user profile owns the top language layer (see the header comment).
+  var profile = (root && root.TurnlyUserProfile) || require('./user-profile.js');
 
   // ── ICU subset ──────────────────────────────────────────────────────────
 
@@ -151,18 +160,30 @@
     return resolveSystem(platformLocale, deviceLanguages);
   }
 
+  // window.localStorage in the browser; the globalThis fallback is the
+  // seam the Node tests inject through (root is null there).
+  function storage() {
+    if (root && root.localStorage) return root.localStorage;
+    if (typeof globalThis !== 'undefined' && globalThis.localStorage) {
+      return globalThis.localStorage;
+    }
+    return null;
+  }
+
   function readChoice() {
     try {
-      var saved = root && root.localStorage && root.localStorage.getItem(STORAGE_KEY);
+      var store = storage();
+      var saved = store && store.getItem(STORAGE_KEY);
       return CHOICES.indexOf(saved) !== -1 ? saved : 'system';
     } catch (e) { return 'system'; }
   }
 
   function writeChoice(choice) {
     try {
-      if (!root || !root.localStorage) return;
-      if (choice === 'system') root.localStorage.removeItem(STORAGE_KEY);
-      else root.localStorage.setItem(STORAGE_KEY, choice);
+      var store = storage();
+      if (!store) return;
+      if (choice === 'system') store.removeItem(STORAGE_KEY);
+      else store.setItem(STORAGE_KEY, choice);
     } catch (e) { /* private mode: the choice simply lasts this visit */ }
   }
 
@@ -182,10 +203,10 @@
 
   // ── Runtime state ───────────────────────────────────────────────────────
 
-  var choice = readChoice();
+  var choice = readChoice(); // the device-wide layer; the profile is read live
   var urlLocale = root ? urlLocaleOf() : null;
   var platformLocale = null;
-  var locale = resolveLocale(choice, urlLocale, platformLocale, deviceLanguages());
+  var locale = resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages());
   var listeners = [];
 
   function applyLocale(next) {
@@ -209,22 +230,33 @@
   }
 
   function getLocale() { return locale; }
-  function getChoice() { return choice; }
+  // The choice in force: the user profile's language when it has one, else
+  // the device-wide preference. The picker reads this.
+  function effectiveChoice() {
+    var fromProfile = profile.getLanguage();
+    return fromProfile || choice;
+  }
+  function getChoice() { return effectiveChoice(); }
   // What the picker should show: the URL-forced language while it is in
   // effect (the language actually in use), otherwise the saved choice.
   function getEffectiveChoice() { return urlLocale || choice; }
 
   function setChoice(next) {
     if (CHOICES.indexOf(next) === -1) return;
+    // Write through BOTH layers: the profile language is the setting going
+    // forward (it maps onto the users.language column, null = follow
+    // system), and the device-wide key stays in step so a device that only
+    // has that key still agrees after the picker is used.
+    profile.setLanguage(next === 'system' ? null : next);
     choice = next;
     urlLocale = null; // an explicit choice ends the URL override for this visit
     writeChoice(choice);
-    applyLocale(resolveLocale(choice, urlLocale, platformLocale, deviceLanguages()));
+    applyLocale(resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages()));
   }
 
   function setPlatformLocale(tag) {
     platformLocale = tag || null;
-    applyLocale(resolveLocale(choice, urlLocale, platformLocale, deviceLanguages()));
+    applyLocale(resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages()));
   }
 
   function onChange(fn) { listeners.push(fn); }

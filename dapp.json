@@ -3,8 +3,8 @@
   "secrets": [],
   "tests": [
     {
-      "id": "foundation.default",
-      "name": "Foundation renders",
+      "id": "beranda.default",
+      "name": "Beranda renders",
       "path": "/",
       "expectText": "Arisan Keluarga Besar",
       "visual": true,
@@ -15,13 +15,31 @@
       ]
     },
     {
-      "name": "Status chips with text (English default)",
-      "path": "/",
-      "expectText": "Awaiting confirmation"
+      "id": "detail.status",
+      "name": "Detail arisan renders with the turn circle and status tab",
+      "path": "/arisan/demo-kb",
+      "expectText": "Awaiting confirmation",
+      "expectSelector": "#lingkaran-giliran",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "styles/**",
+        "tailwind.config.js"
+      ]
     },
     {
-      "name": "Indonesian renders",
+      "name": "Turn circle centre text (English default)",
+      "path": "/arisan/demo-kb",
+      "expectText": "Turn 4 of 10"
+    },
+    {
+      "name": "Indonesian renders on Beranda",
       "path": "/?lang=id",
+      "expectText": "Arisan Anda"
+    },
+    {
+      "name": "Indonesian renders on Detail arisan",
+      "path": "/arisan/demo-kb?lang=id",
       "expectText": "Menunggu konfirmasi"
     },
     {

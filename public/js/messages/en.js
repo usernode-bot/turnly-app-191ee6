@@ -27,21 +27,52 @@
   'use strict';
   return {
     'app.name': 'Turnly',
-    'foundation.subtitle': 'Preview of the design foundation and sample data',
 
+    // Beranda
+    'home.greeting.morning': 'Good morning, {name}',
+    'home.greeting.afternoon': 'Good afternoon, {name}',
+    'home.greeting.evening': 'Good evening, {name}',
+    'home.greeting.night': 'Good evening, {name}',
     'home.dueTitle': 'Contribution due',
     'home.dueIn': 'Due {date}, {days, plural, one{in 1 day} other{in # days}}',
     'home.dueToday': 'Due today',
     'home.pastDue': '{days, plural, one{1 day} other{# days}} past due',
     'home.allPaid': 'All your contributions are paid',
+    'home.newArisan': 'Create new arisan',
+    'home.newArisanDemo': 'Creating an arisan arrives with accounts. This demo shows sample groups.',
 
     'groups.title': 'Your arisan groups',
     'groups.explainer': 'An arisan is a rotating savings group: members pay in each round and take turns receiving the pot.',
     'groups.summary': '{paid} of {total} paid · Round {round} of {rounds}',
 
-    'board.title': 'Contribution status board',
-    'board.round': 'Round {round} of {rounds}',
-    'board.roundWithRecipient': 'Round {round} of {rounds} · Recipient: {name}',
+    // Detail arisan: the turn circle and its surroundings
+    'detail.turnOf': 'Turn {round} of {rounds}',
+    'detail.collected': 'Collected {collected} of {total}',
+    'detail.paidProgress': '{paid, plural, one{1 member paid} other{# members paid}}',
+    'detail.viewAs': 'Viewing as (demo)',
+    'role.member': 'Member',
+    'role.admin': 'Admin',
+
+    'tab.status': 'Status',
+    'tab.turns': 'Turns',
+    'tab.history': 'History',
+
+    'turns.current': 'Receiving this round',
+
+    'history.round': 'Round {round} · {date}',
+    'history.recipient': 'Recipient: {name}',
+    'history.paidOut': 'Payout handed over',
+    'history.empty': 'No finished rounds yet. The first payout appears here.',
+
+    'action.confirm': 'Confirm',
+    'action.reject': 'Reject',
+    'action.remind': 'Remind',
+
+    'reject.title': 'Reject proof from {name}',
+    'reject.reasonLabel': 'Reason (optional)',
+    'reject.reasonPlaceholder': 'For example: the amount does not match',
+
+    'bar.remindUnpaid': '{count, plural, one{Remind 1 member} other{Remind # members}}',
 
     'status.paid': 'Paid',
     'status.awaiting': 'Awaiting confirmation',
@@ -59,14 +90,24 @@
     'tag.admin': 'Admin',
 
     'a11y.memberStatus': '{name}, {status}',
+    'a11y.back': 'Back',
 
     'pay.action': 'Pay contribution',
     'pay.title': 'Pay contribution for {group}',
     'pay.transferTo': 'Transfer to',
     'pay.copyAccount': 'Copy account number',
+    'pay.proofTitle': 'Send proof of transfer',
+    'pay.choosePhoto': 'Choose photo',
+    'pay.changePhoto': 'Change photo',
+    'pay.sendProof': 'Send proof',
+    'pay.proofAlt': 'Chosen proof photo',
     'pay.cancel': 'Cancel',
 
     'toast.accountCopied': 'Account number copied',
+    'toast.confirmed': 'Confirmed {name} as paid',
+    'toast.rejected': 'Proof rejected. {name} can send a new one.',
+    'toast.reminderSent': 'Reminder sent to {name}',
+    'toast.remindersSent': '{count, plural, one{Reminder sent to 1 member} other{Reminder sent to # members}}',
     'demo.note': 'This screen shows sample data for demo mode.',
 
     'language.title': 'Language',

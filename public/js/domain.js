@@ -70,6 +70,25 @@
     return n > 0 ? n : 0;
   }
 
+  // The greeting band for an hour of the Jakarta clock: pagi 04-10,
+  // siang 11-14, sore 15-17, malam otherwise. The screen passes the hour
+  // it read in Asia/Jakarta; this only maps it, so the bands stay testable.
+  function bandSapa(jam) {
+    if (jam >= 4 && jam <= 10) return 'pagi';
+    if (jam >= 11 && jam <= 14) return 'siang';
+    if (jam >= 15 && jam <= 17) return 'sore';
+    return 'malam';
+  }
+
+  // The current hour in Asia/Jakarta (UTC+7, no daylight saving).
+  function jamJakarta(kini) {
+    return Number(new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jakarta',
+      hour: 'numeric',
+      hour12: false,
+    }).format(kini || new Date()));
+  }
+
   // Resolve how a member's iuran should be PRESENTED this periode:
   // { key: 'lunas'|'menunggu'|'belum'|'telat', telatHari }. A 'belum'
   // iuran past its due date presents as 'telat'. 'ditolak' returns to
@@ -127,6 +146,8 @@
     PERIODE_STATUS: PERIODE_STATUS,
     selisihHari: selisihHari,
     hitungTelatHari: hitungTelatHari,
+    bandSapa: bandSapa,
+    jamJakarta: jamJakarta,
     formatRupiah: formatRupiah,
     formatTanggalPendek: formatTanggalPendek,
     statusIuranTampil: statusIuranTampil,

@@ -66,15 +66,10 @@
   <title>Turnly</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23222B5A'/><circle cx='50' cy='50' r='30' fill='none' stroke='%23F0A202' stroke-width='9' stroke-dasharray='28 14'/></svg>">
   <!-- Turnly fonts: Bricolage Grotesque for titles and big amounts, Figtree
-       for body text. If they cannot load, tailwind.config.js falls back to
-       the system sans and the layout holds. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap">
-  <!-- Tailwind, PRECOMPILED for this app. npm run build compiles
-       styles/tailwind-input.css to public/tailwind.css on every image build.
-       Class names must stay whole literals in the markup and JS strings or
-       the compiler will not see them. -->
+       for body text. Self-hosted from /fonts/ (see styles/tailwind-input.css
+       for the @font-face rules, compiled into /tailwind.css), so no screen
+       loads anything from a third-party host; tailwind.config.js falls back
+       to the system sans for the moment before they load. -->
   <link rel="stylesheet" href="/tailwind.css">
   <!-- The platform bridge, centrally hosted and loaded by RELATIVE path.
        Never vendor it and never write a hostname in front of it. It is NOT
@@ -82,9 +77,9 @@
        ANSWERS the shell (offline launch included), and how the page learns
        the viewer's light/dark theme below. -->
   <script src="/usernode-bridge/v1/bridge.js"></script>
-  <!-- The platform's native-feel UI kit: the bottom sheet, the toast and
-       the pressed states are the kit's, themed via the --un-* variables in
-       styles/tailwind-input.css. Never vendor it. -->
+  <!-- The platform's native-feel UI kit: the bottom sheet, the modal, the
+       toast and the pressed states are the kit's, themed via the --un-*
+       variables in styles/tailwind-input.css. Never vendor it. -->
   <link rel="stylesheet" href="/usernode-native/v1/native.css">
   <script src="/usernode-native/v1/native.js"></script>
   <!-- Follow the viewer's Homeroom theme (the bridge reports it), with the
@@ -104,57 +99,123 @@
   </script>
 </head>
 <body class="min-h-screen bg-ground text-fg">
-  <!-- Tahap 1 (Fondasi): a preview of the design system on the demo data.
-       Every string is filled by public/js/foundation.js from i18n.js — no
-       hardcoded copy here (tests/hardcoded-strings.test.js enforces it).
-       Tahap 2 replaces this screen with the real Beranda and Detail arisan. -->
-  <main class="mx-auto flex max-w-md flex-col gap-8 px-4 pb-10 pt-8">
+  <main>
+    <!-- ── Beranda ───────────────────────────────────────────────────────
+         Greeting, the contribution-due hero block, the "Arisan Anda"
+         list and the create button. Every string is filled by
+         public/js/beranda.js from i18n.js — no hardcoded copy here
+         (tests/hardcoded-strings.test.js enforces it). -->
+    <div id="beranda-view" class="mx-auto flex max-w-md flex-col gap-8 px-4 pb-10 pt-8" hidden>
+      <header class="flex flex-col gap-1">
+        <h1 id="home-greeting" class="font-display text-heading"></h1>
+      </header>
 
-    <header class="flex flex-col gap-1">
-      <h1 id="app-title" class="font-display text-title"></h1>
-      <p id="app-subtitle" class="text-small text-muted"></p>
-    </header>
+      <!-- The hero payment block: the app's signature asymmetric corners
+           (three large, one small). Filled from the demo data. -->
+      <section id="hero-iuran" class="hero flex flex-col items-start gap-1.5" aria-labelledby="hero-label">
+        <p id="hero-label" class="text-small text-hero-muted"></p>
+        <p id="hero-nama" class="font-display text-heading"></p>
+        <p id="hero-nominal" class="font-display text-title tabular-nums"></p>
+        <p id="hero-jatuh-tempo" class="text-body text-hero-muted"></p>
+        <button id="btn-bayar" class="btn-primary mt-3 w-full"></button>
+      </section>
 
-    <!-- The hero payment block: the app's signature asymmetric corners
-         (three large, one small). Filled from the demo data. -->
-    <section id="hero-iuran" class="hero flex flex-col items-start gap-1.5" aria-labelledby="hero-label">
-      <p id="hero-label" class="text-small text-hero-muted"></p>
-      <p id="hero-nama" class="font-display text-heading"></p>
-      <p id="hero-nominal" class="font-display text-title tabular-nums"></p>
-      <p id="hero-jatuh-tempo" class="text-body text-hero-muted"></p>
-      <button id="btn-bayar" class="btn-primary mt-3 w-full"></button>
-    </section>
+      <section>
+        <h2 id="arisan-anda-label" class="section-label"></h2>
+        <!-- First appearance of "arisan" on this screen: one plain sentence
+             saying what it is. -->
+        <p id="groups-explainer" class="mb-2 px-1 text-small text-muted"></p>
+        <ul id="daftar-arisan" class="list"></ul>
+        <button id="btn-arisan-baru" class="btn-secondary mt-3 w-full"></button>
+      </section>
 
-    <section>
-      <h2 id="arisan-anda-label" class="section-label"></h2>
-      <!-- First appearance of "arisan" on this screen: one plain sentence
-           saying what it is. -->
-      <p id="groups-explainer" class="mb-2 px-1 text-small text-muted"></p>
-      <ul id="daftar-arisan" class="list"></ul>
-    </section>
+      <!-- The language setting: applies on change, saved to the user
+           profile on this device (public/js/user-profile.js). -->
+      <section>
+        <label id="language-label" for="language-select" class="section-label block"></label>
+        <select id="language-select" class="field">
+          <option value="en"></option>
+          <option value="id"></option>
+          <option value="system"></option>
+        </select>
+      </section>
 
-    <section>
-      <h2 id="papan-judul" class="section-label"></h2>
-      <div id="papan-status"></div>
-    </section>
+      <p id="demo-catatan" class="text-center text-small text-muted"></p>
+    </div>
 
-    <section>
-      <h2 id="keterangan-label" class="section-label"></h2>
-      <ul id="daftar-keterangan" class="list"></ul>
-    </section>
+    <!-- ── Detail arisan ─────────────────────────────────────────────────
+         Sticky header, the lingkaran giliran (turn circle), collected and
+         progress lines with the status legend, the Status / Turns /
+         History tabs and the sticky bottom action bar. Filled by
+         public/js/detail.js. -->
+    <div id="detail-view" hidden>
+      <header id="detail-header" class="app-header">
+        <div class="mx-auto flex max-w-md items-center gap-2 px-4">
+          <button id="btn-kembali" class="btn-secondary shrink-0 px-3">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <h1 id="detail-nama" class="min-w-0 flex-1 truncate font-display text-heading"></h1>
+        </div>
+      </header>
 
-    <!-- The language setting: applies on change, saved on this device. Moves
-         to the Settings screen when Tahap 2 adds one. -->
-    <section>
-      <label id="language-label" for="language-select" class="section-label block"></label>
-      <select id="language-select" class="field">
-        <option value="en"></option>
-        <option value="id"></option>
-        <option value="system"></option>
-      </select>
-    </section>
+      <div class="mx-auto flex max-w-md flex-col gap-6 px-4 pb-8 pt-4">
+        <!-- The demo role switch: member and admin views of the same
+             screen, switchable for testing. Real accounts replace it at
+             the backend stage. -->
+        <section class="flex flex-col gap-2">
+          <p id="role-label" class="section-label"></p>
+          <div class="flex gap-2">
+            <button id="role-member" class="btn-secondary flex-1" aria-pressed="false"></button>
+            <button id="role-admin" class="btn-secondary flex-1" aria-pressed="false"></button>
+          </div>
+        </section>
 
-    <p id="demo-catatan" class="text-center text-small text-muted"></p>
+        <!-- The signature lingkaran giliran: the member avatars clockwise
+             from the top, the accent ring on this round's recipient, and
+             the round, recipient and amount in the centre. -->
+        <section class="flex flex-col gap-3" aria-labelledby="detail-nama">
+          <div id="lingkaran-giliran" class="relative mx-auto aspect-square w-full max-w-xs"></div>
+          <div class="flex flex-col gap-0.5 px-1">
+            <p id="detail-terkumpul" class="text-body"></p>
+            <p id="detail-progres" class="text-small text-muted"></p>
+          </div>
+          <div>
+            <h2 id="keterangan-label" class="section-label"></h2>
+            <ul id="daftar-keterangan" class="list"></ul>
+          </div>
+        </section>
+
+        <!-- The three tabs. Panels swap on click; their content is
+             rendered by detail.js. -->
+        <section class="flex flex-col gap-3">
+          <div role="tablist" id="tablist" class="flex gap-2">
+            <button id="tab-status" role="tab" aria-selected="false" aria-controls="panel-status" class="btn-secondary flex-1"></button>
+            <button id="tab-turns" role="tab" aria-selected="false" aria-controls="panel-turns" class="btn-secondary flex-1"></button>
+            <button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history" class="btn-secondary flex-1"></button>
+          </div>
+          <div id="panel-status" role="tabpanel" aria-labelledby="tab-status">
+            <ul id="daftar-status" class="list"></ul>
+          </div>
+          <div id="panel-turns" role="tabpanel" aria-labelledby="tab-turns" hidden>
+            <ul id="daftar-giliran" class="list"></ul>
+          </div>
+          <div id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+            <ul id="daftar-riwayat" class="list"></ul>
+            <div id="riwayat-kosong" class="state-empty" hidden>
+              <p id="riwayat-kosong-teks" class="text-small text-muted"></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- The sticky bottom action bar: varies by role and state. -->
+      <div id="bar-bawah" class="bar-bawah" hidden>
+        <div class="mx-auto flex max-w-md flex-col gap-2">
+          <button id="btn-bar" class="btn-primary w-full"></button>
+          <p id="bar-teks" class="text-center text-body text-muted" hidden></p>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Lembar bayar iuran: the content of the platform bottom sheet
@@ -164,20 +225,32 @@
     <div class="flex flex-col gap-4 px-5 pb-6 pt-2">
       <h2 id="sheet-judul" class="font-display text-heading"></h2>
       <p id="sheet-nominal" class="font-display text-title tabular-nums"></p>
-      <div class="rounded-[10px] border border-line bg-raised px-4 py-3">
+      <div class="card flex flex-col gap-2">
         <p id="sheet-transfer-label" class="text-small text-muted"></p>
         <p id="sheet-rekening" class="text-body font-medium"></p>
+        <button id="btn-salin" class="btn-secondary mt-1 w-full"></button>
       </div>
-      <button id="btn-salin" class="btn-primary w-full"></button>
+      <div class="flex flex-col gap-2">
+        <p id="sheet-proof-title" class="section-label"></p>
+        <div class="flex items-center gap-3">
+          <img id="proof-preview" class="h-12 w-12 shrink-0 rounded-lg border border-line object-cover" alt="" hidden>
+          <button id="btn-pilih-foto" class="btn-secondary min-w-0 flex-1 truncate"></button>
+          <input id="input-foto" type="file" accept="image/*" class="hidden">
+        </div>
+        <button id="btn-kirim" class="btn-primary w-full" disabled></button>
+      </div>
       <button id="btn-batal" class="btn-secondary w-full"></button>
     </div>
   </template>
 
   <script src="/js/messages/en.js"></script>
   <script src="/js/messages/id.js"></script>
+  <script src="/js/user-profile.js"></script>
   <script src="/js/i18n.js"></script>
   <script src="/js/domain.js"></script>
   <script src="/js/demo-data.js"></script>
-  <script src="/js/foundation.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/beranda.js"></script>
+  <script src="/js/detail.js"></script>
 </body>
 </html>

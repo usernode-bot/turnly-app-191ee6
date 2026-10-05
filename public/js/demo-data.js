@@ -51,6 +51,33 @@
     rekening_kas: 'BCA 1234567890 a.n. Kas Arisan Keluarga Besar (demo)',
     status: 'berjalan',
     admin_id: 'demo-kb-a3',
+    // Rounds 1-3 already finished: the pot was handed to each recipient.
+    periode_lalu: [
+      {
+        id: 'demo-kb-periode-1',
+        arisan_id: 'demo-kb',
+        nomor: 1,
+        tanggal_jatuh_tempo: '2026-07-07',
+        penerima_anggota_id: 'demo-kb-a1',
+        status: 'dana_diserahkan',
+      },
+      {
+        id: 'demo-kb-periode-2',
+        arisan_id: 'demo-kb',
+        nomor: 2,
+        tanggal_jatuh_tempo: '2026-08-07',
+        penerima_anggota_id: 'demo-kb-a2',
+        status: 'dana_diserahkan',
+      },
+      {
+        id: 'demo-kb-periode-3',
+        arisan_id: 'demo-kb',
+        nomor: 3,
+        tanggal_jatuh_tempo: '2026-09-07',
+        penerima_anggota_id: 'demo-kb-a3',
+        status: 'dana_diserahkan',
+      },
+    ],
     anggota: [
       anggota('demo-kb', 1, 'Pak Budi', 'anggota'),
       anggota('demo-kb', 2, 'Bu Wati', 'anggota'),
@@ -100,6 +127,16 @@
     rekening_kas: 'Mandiri 9876543210 a.n. Kas Arisan Kantor (demo)',
     status: 'berjalan',
     admin_id: 'demo-k3-a5',
+    periode_lalu: [
+      {
+        id: 'demo-k3-periode-1',
+        arisan_id: 'demo-k3',
+        nomor: 1,
+        tanggal_jatuh_tempo: '2026-09-25',
+        penerima_anggota_id: 'demo-k3-a1',
+        status: 'dana_diserahkan',
+      },
+    ],
     anggota: [
       anggota('demo-k3', 1, 'Mas Yoga', 'anggota'),
       anggota('demo-k3', 2, 'Mba Tika', 'anggota'),
