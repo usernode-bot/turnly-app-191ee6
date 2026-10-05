@@ -127,7 +127,10 @@
       var status = d.statusIuranTampil(d.iuranUntukAnggota(arisan, anggota.id), arisan.periode_aktif, HARI_INI);
       var li = app.el('li', 'flex flex-col gap-2 px-4 py-3');
 
-      var atas = app.el('div', 'flex items-center gap-3');
+      // flex-wrap: at 200% system text scale the chip can drop to its own
+      // line instead of clipping off the 360px screen. At normal sizes
+      // nothing wraps, so the layout is unchanged.
+      var atas = app.el('div', 'flex flex-wrap items-center gap-x-3 gap-y-1');
       atas.appendChild(app.avatarEl(anggota.nama_tampil, status));
       var namaBaris = app.el('div', 'flex min-w-0 flex-wrap items-center gap-1.5');
       namaBaris.appendChild(app.el('p', 'truncate text-body font-medium', anggota.nama_tampil));

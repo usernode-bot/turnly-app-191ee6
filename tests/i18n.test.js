@@ -44,6 +44,25 @@ test('plural engine: proofs and members at 0, 1 and many, with =0 and nesting', 
   assert.equal(i18n.format('{n, plural, other{# item}}', { n: 1234 }, 'id'), '1.234 item');
 });
 
+test('the real member and progress plurals at 0, 1 and many, in both languages', () => {
+  i18n.setChoice('en');
+  assert.equal(i18n.t('bar.remindUnpaid', { count: 0 }), 'Remind 0 members');
+  assert.equal(i18n.t('bar.remindUnpaid', { count: 1 }), 'Remind 1 member');
+  assert.equal(i18n.t('bar.remindUnpaid', { count: 2 }), 'Remind 2 members');
+  assert.equal(i18n.t('toast.remindersSent', { count: 1 }), 'Reminder sent to 1 member');
+  assert.equal(i18n.t('toast.remindersSent', { count: 5 }), 'Reminder sent to 5 members');
+  assert.equal(i18n.t('detail.paidProgress', { paid: 0 }), '0 members paid');
+  assert.equal(i18n.t('detail.paidProgress', { paid: 1 }), '1 member paid');
+  assert.equal(i18n.t('detail.paidProgress', { paid: 7 }), '7 members paid');
+  i18n.setChoice('id');
+  assert.equal(i18n.t('bar.remindUnpaid', { count: 0 }), 'Ingatkan 0 anggota');
+  assert.equal(i18n.t('bar.remindUnpaid', { count: 1 }), 'Ingatkan 1 anggota');
+  assert.equal(i18n.t('bar.remindUnpaid', { count: 2 }), 'Ingatkan 2 anggota');
+  assert.equal(i18n.t('toast.remindersSent', { count: 5 }), 'Pengingat terkirim ke 5 anggota');
+  assert.equal(i18n.t('detail.paidProgress', { paid: 7 }), '7 anggota lunas');
+  i18n.setChoice('en');
+});
+
 test('a key missing from the active locale falls back to English, then to the key', () => {
   i18n.setChoice('id');
   assert.equal(i18n.t('app.name'), 'Turnly');
