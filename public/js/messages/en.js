@@ -73,11 +73,13 @@
     'reject.reasonPlaceholder': 'For example: the amount does not match',
 
     'bar.remindUnpaid': '{count, plural, one{Remind 1 member} other{Remind # members}}',
+    'bar.reminded': '{count, plural, one{1 member reminded} other{# members reminded}}',
 
     'status.paid': 'Paid',
     'status.awaiting': 'Awaiting confirmation',
     'status.unpaid': 'Unpaid',
     'status.late': 'Late {days, plural, one{1 day} other{# days}}',
+    'status.reminded': 'Reminded',
 
     'legend.title': 'What the statuses mean',
     'legend.paid': "This round's contribution was received",

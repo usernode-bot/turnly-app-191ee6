@@ -130,6 +130,65 @@ app.use((req, res, next) => {
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// ── Language setting: the account half ───────────────────────────────────
+// The users table backs the Language setting the picker saves on the
+// device (public/js/user-profile.js). It holds only the platform user id,
+// the username and the language ('en', 'id' or NULL = follow system),
+// nothing a stranger reading every row could be harmed by, so the table is
+// public and staging needs no seed rows: an empty table honestly means
+// "nobody has saved a choice yet".
+async function migrate() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      user_id  text PRIMARY KEY,
+      username text,
+      language text
+    );
+  `);
+}
+
+// A read route, so it must tolerate guests: without an account the answer
+// is simply "no saved language" and the device keeps driving. Reading
+// never inserts a row.
+app.get('/api/user/language', (req, res) => {
+  if (!req.user) return res.json({ language: null });
+  pool.query(
+    'SELECT language FROM users WHERE user_id = $1',
+    [req.user.id],
+    (err, out) => {
+      if (err) {
+        console.warn('language read failed: ' + err.message);
+        return res.status(500).json({ error: 'language_read_failed' });
+      }
+      return res.json({ language: out.rows.length ? out.rows[0].language : null });
+    }
+  );
+});
+
+// Only signed-in users save a language: the middleware has already
+// answered guests and anonymous callers with 401 by the time we run.
+// NULL ("follow system") is a valid value, so anything else is a 400.
+app.put('/api/user/language', (req, res) => {
+  const lang = req.body ? req.body.language : undefined;
+  if (lang !== 'en' && lang !== 'id' && lang !== null) {
+    return res.status(400).json({ error: 'invalid_language' });
+  }
+  pool.query(
+    `INSERT INTO users (user_id, username, language)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id) DO UPDATE
+       SET username = EXCLUDED.username, language = EXCLUDED.language`,
+    [req.user.id, req.user.username, lang],
+    (err) => {
+      if (err) {
+        console.warn('language save failed: ' + err.message);
+        return res.status(500).json({ error: 'language_save_failed' });
+      }
+      return res.json({ language: lang });
+    }
+  );
+});
+
 // The template ships no favicon file; index.html carries an inline SVG
 // icon instead. Answer 204 here so anything that still probes
 // /favicon.ico (older browsers, direct visits) doesn't fall through to
@@ -174,9 +233,24 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const server = app.listen(port, () => console.log(`Listening on :${port}`));
-// Let Envoy retire idle upstream connections at 60s, with a 15s margin.
-server.keepAliveTimeout = 75_000;
+let server = null; // assigned once the schema is in place, used by shutdown
+
+// Schema first, then traffic: the boot migration must have run before any
+// request can touch the tables. A migration that fails here is a boot
+// failure, not a per-request 500 on every later call.
+async function main() {
+  try {
+    await migrate();
+  } catch (err) {
+    console.error('boot migration failed: ' + err.message);
+    process.exit(1);
+  }
+  server = app.listen(port, () => console.log(`Listening on :${port}`));
+  // Let Envoy retire idle upstream connections at 60s, with a 15s margin.
+  server.keepAliveTimeout = 75_000;
+}
+
+main();
 
 // Graceful shutdown: stop accepting connections, drain briefly, close the
 // pool, exit. The platform stops the container with SIGTERM on redeploy.

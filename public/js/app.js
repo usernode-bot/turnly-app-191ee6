@@ -17,6 +17,7 @@
   var i18n = window.TurnlyI18n;
   var t = i18n.t;
   var demo = window.TurnlyDemoData;
+  var reminders = window.TurnlyReminders;
   var un = window.unNative || null;
 
   var HARI_INI = demo.DEMO_HARI_INI;
@@ -125,6 +126,44 @@
       }
     }
     rerender();
+  }
+
+  // ── Reminders: recorded on this device, shown on the member row ─────────
+  // Demo stage: nothing is sent to members; the record drives the
+  // "Reminded" chip so the admin sees who has been nudged this round.
+
+  function remind(arisan, anggota) {
+    var periodeId = arisan.periode_aktif && arisan.periode_aktif.id;
+    if (reminders && periodeId) {
+      reminders.record(arisan.id, periodeId, anggota.id, new Date().toISOString());
+    }
+    toast(t('toast.reminderSent', { name: anggota.nama_tampil }));
+    rerender();
+  }
+
+  // Reminds every unpaid and late member at once (members awaiting
+  // confirmation have already paid). Returns how many were recorded.
+  function remindAll(arisan) {
+    var periodeId = arisan.periode_aktif && arisan.periode_aktif.id;
+    if (!reminders || !periodeId) return 0;
+    var count = 0;
+    d.anggotaUrut(arisan).forEach(function (anggota) {
+      var status = d.statusIuranTampil(d.iuranUntukAnggota(arisan, anggota.id), arisan.periode_aktif, HARI_INI);
+      if (status.key === 'belum' || status.key === 'telat') {
+        reminders.record(arisan.id, periodeId, anggota.id, new Date().toISOString());
+        count++;
+      }
+    });
+    toast(t('toast.remindersSent', { count: count }));
+    rerender();
+    return count;
+  }
+
+  // This device's reminder record for one member in the active round:
+  // an ISO timestamp, or null.
+  function reminderFor(arisan, anggotaId) {
+    if (!reminders || !arisan.periode_aktif) return null;
+    return reminders.get(arisan.id, arisan.periode_aktif.id, anggotaId);
   }
 
   // ── Toast + copy ─────────────────────────────────────────────────────────
@@ -370,9 +409,9 @@
     salinRekening: salinRekening,
     bukaSheetBayar: bukaSheetBayar,
     bukaModalTolak: bukaModalTolak,
-    remind: function (anggota) {
-      toast(t('toast.reminderSent', { name: anggota.nama_tampil }));
-    },
+    remind: remind,
+    remindAll: remindAll,
+    reminderFor: reminderFor,
     getRole: getRole,
     setRole: setRole,
     rerender: rerender,

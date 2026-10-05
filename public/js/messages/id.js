@@ -61,11 +61,13 @@
     'reject.reasonPlaceholder': 'Contoh: nominal tidak sesuai',
 
     'bar.remindUnpaid': 'Ingatkan {count} anggota',
+    'bar.reminded': '{count} anggota diingatkan',
 
     'status.paid': 'Lunas',
     'status.awaiting': 'Menunggu konfirmasi',
     'status.unpaid': 'Belum bayar',
     'status.late': 'Telat {days} hari',
+    'status.reminded': 'Diingatkan',
 
     'legend.title': 'Keterangan status',
     'legend.paid': 'Iuran periode ini diterima',

@@ -148,7 +148,15 @@
             app.bukaModalTolak(arisan, anggota);
           }, 'border-danger/60 text-danger'));
         } else if (status.key === 'belum' || status.key === 'telat') {
-          tombol.push(tombolKelas(t('action.remind'), function () { app.remind(anggota); }, ''));
+          // Already nudged this round: the Remind button gives way to a
+          // Reminded chip beside the status chip. The mark vanishes on its
+          // own once the member is no longer unpaid or late (proof sent,
+          // confirmed paid) or the round turns over.
+          if (app.reminderFor(arisan, anggota.id)) {
+            atas.appendChild(app.el('span', 'chip chip-menunggu', t('status.reminded')));
+          } else {
+            tombol.push(tombolKelas(t('action.remind'), function () { app.remind(arisan, anggota); }, ''));
+          }
         }
       } else if (pengguna && anggota.id === pengguna.id
           && (status.key === 'belum' || status.key === 'telat')) {
@@ -254,16 +262,24 @@
       }
     } else {
       var belum = 0;
+      var diingatkan = 0;
       d.anggotaUrut(arisan).forEach(function (anggota) {
         var s = d.statusIuranTampil(d.iuranUntukAnggota(arisan, anggota.id), arisan.periode_aktif, HARI_INI);
-        if (s.key === 'belum' || s.key === 'telat') belum++;
+        if (s.key === 'belum' || s.key === 'telat') {
+          belum++;
+          if (app.reminderFor(arisan, anggota.id)) diingatkan++;
+        }
       });
       if (belum > 0) {
         btn.hidden = false;
         btn.textContent = t('bar.remindUnpaid', { count: belum });
-        aksiBar = function () {
-          app.toast(t('toast.remindersSent', { count: belum }));
-        };
+        aksiBar = function () { app.remindAll(arisan); };
+        // The muted line under the button: this round's reminder count.
+        // The button stays — reminding again replaces the older marks.
+        if (diingatkan > 0) {
+          teks.hidden = false;
+          teks.textContent = t('bar.reminded', { count: diingatkan });
+        }
       } else {
         bar.hidden = true; // everyone paid: nothing to remind
         return;

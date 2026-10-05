@@ -9,6 +9,10 @@
  * too). Anything else reads back as null, so a half-written or stale
  * value can never select an unsupported language.
  *
+ * The choice is also saved to the account (GET/PUT /api/user/language,
+ * the users.language column) so it follows the person across devices;
+ * the device store stays the working truth when the server is unreachable.
+ *
  * Also loadable as a CommonJS module for the Node tests, which inject a
  * stand-in storage on globalThis (the browser passes window itself).
  */
@@ -63,6 +67,68 @@
     return profile;
   }
 
+  // ── The account half ─────────────────────────────────────────────────────
+  // The same choice, saved on the server (GET/PUT /api/user/language), so
+  // it follows the person across devices. The device store stays the
+  // working truth: a failed sync never blocks or undoes a local choice.
+
+  // The page token, read once at load: the iframe URL carries ?token=… and
+  // later fetches forward it by header. At the app's own address there is
+  // no query token and the platform edge attaches identity itself, so
+  // sending nothing there is correct. Node has neither location nor fetch,
+  // so this whole half is inert under the tests.
+  var pageToken = null;
+  if (root && root.location && root.location.search) {
+    try {
+      pageToken = new URLSearchParams(root.location.search).get('token');
+    } catch (e) { pageToken = null; }
+  }
+
+  function fetchHeaders() {
+    var headers = {};
+    if (pageToken) headers['x-usernode-token'] = pageToken;
+    return headers;
+  }
+
+  // The account's saved language: 'en', 'id', or null (the account has no
+  // choice, or it could not be reached — callers treat both as "none").
+  function fetchServerLanguage() {
+    if (typeof fetch !== 'function') return Promise.resolve(null);
+    return fetch('/api/user/language', { headers: fetchHeaders() })
+      .then(function (res) {
+        if (!res.ok) {
+          console.warn('language sync: server answered ' + res.status);
+          return null;
+        }
+        return res.json().then(function (body) {
+          var lang = body && body.language;
+          return (lang === 'en' || lang === 'id') ? lang : null;
+        }, function (err) {
+          console.warn('language sync: bad answer: ' + (err && err.message));
+          return null;
+        });
+      })
+      .catch(function (err) {
+        console.warn('language sync failed: ' + (err && err.message));
+        return null;
+      });
+  }
+
+  // Fire-and-forget: a failed save simply means the account catches up on
+  // a later visit; the device already has the choice.
+  function saveServerLanguage(lang) {
+    if (typeof fetch !== 'function') return;
+    var headers = fetchHeaders();
+    headers['Content-Type'] = 'application/json';
+    try {
+      fetch('/api/user/language', {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify({ language: lang }),
+      }).catch(function () { /* the device keeps the working truth */ });
+    } catch (e) { /* as above */ }
+  }
+
   return {
     STORAGE_KEY: STORAGE_KEY,
     LANGUAGES: LANGUAGES,
@@ -70,5 +136,7 @@
     write: write,
     getLanguage: getLanguage,
     setLanguage: setLanguage,
+    fetchServerLanguage: fetchServerLanguage,
+    saveServerLanguage: saveServerLanguage,
   };
 });

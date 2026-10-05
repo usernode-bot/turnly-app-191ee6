@@ -33,6 +33,11 @@
       "expectText": "Turn 4 of 10"
     },
     {
+      "name": "Detail arisan renders the second demo group with the late status",
+      "path": "/arisan/demo-k3",
+      "expectText": "Late 3 days"
+    },
+    {
       "name": "Indonesian renders on Beranda",
       "path": "/?lang=id",
       "expectText": "Arisan Anda"

@@ -18,7 +18,10 @@
  * device language, else English; only the language subtag matters
  * ("id-ID" -> id, anything else -> en). The picker writes BOTH layers, so
  * they only ever disagree on a device that saved 'turnly.lang' before the
- * profile existed.
+ * profile existed. On load the browser also syncs once with the account
+ * (user-profile.js's server half): an account choice wins over the device,
+ * a device choice with no account copy is saved up, and a ?lang= override
+ * skips the sync for that load.
  *
  * Also loadable as a CommonJS module for the Node tests.
  */
@@ -251,6 +254,10 @@
     choice = next;
     urlLocale = null; // an explicit choice ends the URL override for this visit
     writeChoice(choice);
+    // The account copy: saved so the choice follows the person across
+    // devices. Browser only, and fire-and-forget — the device layers are
+    // already correct either way.
+    if (root) profile.saveServerLanguage(profile.getLanguage());
     applyLocale(resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages()));
   }
 
@@ -274,6 +281,25 @@
     root.addEventListener('usernode:locale-changed', function (e) {
       setPlatformLocale(e && e.detail && e.detail.locale);
     });
+    // One hydration against the account: a choice saved there wins and the
+    // device adopts it (all layers, so the picker shows what is in force);
+    // no account choice yet copies the device choice up, the one-time
+    // migration for devices that picked a language before the account did.
+    // A ?lang= URL override skips it entirely: this load is forced.
+    if (!urlLocale) {
+      profile.fetchServerLanguage().then(function (serverLang) {
+        if (serverLang) {
+          if (serverLang !== profile.getLanguage()) {
+            profile.setLanguage(serverLang);
+            choice = serverLang;
+            writeChoice(choice);
+            applyLocale(resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages()));
+          }
+        } else if (profile.getLanguage()) {
+          profile.saveServerLanguage(profile.getLanguage());
+        }
+      }, function () {});
+    }
   }
 
   return {
