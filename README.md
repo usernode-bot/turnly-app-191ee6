@@ -36,7 +36,8 @@ Fondasi tampilan, belum ada alur produk:
   Token warna di `styles/tailwind-input.css`, nama token di
   `tailwind.config.js`.
 - **Huruf** — Bricolage Grotesque (judul dan angka besar) dan Figtree
-  (isi teks), dimuat dari Google Fonts dengan fallback system sans.
+  (isi teks), dihosting sendiri dari `/fonts/` dengan fallback system
+  sans, jadi tidak ada layar yang memuat apa pun dari pihak ketiga.
 - **Komponen dasar** — tombol utama (sudut 14) dan sekunder (sudut 10),
   chip status bulat penuh yang selalu memuat teks, avatar status dengan
   empat pola yang dibedakan bukan hanya warna, baris daftar berpemisah

@@ -12,6 +12,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Fonts, self-hosted ───────────────────────────────────────────────────
+ * The two display faces from the design brief, served from /fonts/ on this
+ * app's own origin instead of fonts.googleapis.com. Both files are the
+ * latin-subset variable fonts, so one file per family covers every weight
+ * the app uses. Nothing on any screen loads from a third-party host, so a
+ * flaky or blocked external network can never fail the page's own load.
+ * tailwind.config.js keeps the same family names and its system-sans
+ * fallback for the time before these load.
+ */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 500 700;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/fonts/figtree-latin.woff2') format('woff2');
+}
+
 /* ── Colour tokens ────────────────────────────────────────────────────────
  * Turnly's palette, defined once. Each value is "R G B"; tailwind.config.js
  * names them (bg-ground, bg-surface, text-fg, text-muted, border-line,

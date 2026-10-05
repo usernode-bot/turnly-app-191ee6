@@ -26,8 +26,8 @@
             if (seen.has(val)) return '[Circular]';
             seen.add(val);
           }
-          if (typeof val === 'function') return '[Function ' + (val.name || '') + ']';
-          if (val instanceof Error) return val.stack || (v.name + ': ' + v.message);
+          if (typeof val === 'function') return '[Function ' + (val.name || 'anonymous') + ']';
+          if (val instanceof Error) return val.stack || (val.name + ': ' + v.message);
           return val;
         });
       } catch (e) { try { return String(v); } catch (_) { return '[unserializable]'; } }
@@ -66,15 +66,10 @@
   <title>Turnly</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23222B5A'/><circle cx='50' cy='50' r='30' fill='none' stroke='%23F0A202' stroke-width='9' stroke-dasharray='28 14'/></svg>">
   <!-- Turnly fonts: Bricolage Grotesque for titles and big amounts, Figtree
-       for body text. If they cannot load, tailwind.config.js falls back to
-       the system sans and the layout holds. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap">
-  <!-- Tailwind, PRECOMPILED for this app. npm run build compiles
-       styles/tailwind-input.css to public/tailwind.css on every image build.
-       Class names must stay whole literals in the markup and JS strings or
-       the compiler will not see them. -->
+       for body text. Self-hosted from /fonts/ (see styles/tailwind-input.css
+       for the @font-face rules, compiled into /tailwind.css), so no screen
+       loads anything from a third-party host; tailwind.config.js falls back
+       to the system sans for the moment before they load. -->
   <link rel="stylesheet" href="/tailwind.css">
   <!-- The platform bridge, centrally hosted and loaded by RELATIVE path.
        Never vendor it and never write a hostname in front of it. It is NOT
