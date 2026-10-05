@@ -177,6 +177,12 @@
   .chip-telat {
     @apply bg-danger-soft text-danger;
   }
+  /* The History tab's "payout handed over" chip: a finished round, told in
+     words on the neutral treatment (the four status chips above are about
+     this round's contributions, not about a past payout). */
+  .chip-dana {
+    @apply bg-raised text-fg;
+  }
 
   /* Status avatars: the initial circle used in lists and, later, in the
      lingkaran giliran. The four states differ by more than colour:
@@ -221,6 +227,22 @@
   .state-empty,
   .state-error {
     @apply flex flex-col items-center gap-2 px-4 py-8 text-center;
+  }
+
+  /* Sticky screen header (Detail arisan) and sticky bottom action bar:
+     solid surface so content scrolls under them, inset from the notch and
+     the home indicator via the platform-forwarded safe-area properties
+     (bare env() is 0px inside the app frame; the var() fallback keeps the
+     standalone case exact). */
+  .app-header {
+    @apply sticky top-0 z-20 border-b border-line bg-surface;
+    padding-top: max(0.75rem, var(--un-safe-inset-top, 0px));
+    padding-bottom: 0.75rem;
+  }
+  .bar-bawah {
+    @apply sticky bottom-0 z-20 border-t border-line bg-surface px-4;
+    padding-top: 0.75rem;
+    padding-bottom: max(0.75rem, var(--un-safe-inset-bottom, 0px));
   }
 
   /* Fallback bottom sheet for when the usernode-native kit cannot load

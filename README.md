@@ -4,7 +4,30 @@ Aplikasi arisan digital: mencatat giliran, iuran, pengingat bayar, dan
 riwayat siapa yang sudah mendapat giliran. Dibangun di atas Homeroom
 (web app, vanilla JS + Tailwind yang dikompilasi saat build).
 
-## Tahap 1 — Fondasi (sekarang)
+## Tahap 2 — Layar utama (sekarang)
+
+Dua layar inti di atas data contoh (demo), tanpa backend:
+
+- **Beranda (`/`)** — sapaan sesuai waktu Jakarta, blok hero iuran yang
+  harus dibayar (sudut tak simetris, jumlah besar), daftar "Arisan Anda"
+  dengan lingkaran status mini dan chip berlabel, tombol "Buat arisan
+  baru", pengaturan bahasa.
+- **Detail arisan (`/arisan/<id>`)** — header melekat dengan tombol
+  kembali, **lingkaran giliran**: avatar anggota tersusun searah jarum
+  jam dari atas, cincin kuning di penerima periode ini, tengah lingkaran
+  berisi giliran, nama penerima, dan nominal; garis terkumpul dan
+  progres; keterangan status; tiga tab **Status / Giliran / Riwayat**;
+  bilah aksi bawah yang melekat dan berubah menurut peran dan kondisi.
+- **Peran demo** — di Detail arisan, saklar "Lihat sebagai (demo)"
+  menukar tampilan anggota (bayar iuran, catatan menunggu konfirmasi)
+  dan admin (Konfirmasi, Tolak dengan alasan, Ingatkan per baris, dan
+  aksi "Ingatkan N anggota" di bilah bawah). Perubahan status terjadi di
+  memori; muat ulang halaman untuk kembali ke data contoh.
+- **Lembar bayar iuran** — kotak rekening kas dengan tombol salin, pemilih
+  foto bukti, dan tombol "Kirim bukti" yang aktif setelah foto dipilih;
+  setelah terkirim, status berubah menjadi "Menunggu konfirmasi".
+
+## Tahap 1 — Fondasi
 
 Fondasi tampilan, belum ada alur produk:
 
@@ -34,8 +57,9 @@ Fondasi tampilan, belum ada alur produk:
   system), tersimpan di perangkat. `npm test` menjaga kunci tetap sepadan,
   bentuk jamak, dan tidak ada teks yang tertulis langsung di markup.
 
-Layar fondasi di `/` adalah pratinjau komponen di atas data contoh; tahap
-berikutnya menggantinya dengan Beranda dan Detail arisan yang sesungguhnya.
+Layar fondasi Tahap 1 sudah digantikan oleh Beranda dan Detail arisan;
+komponen dasar, model domain, dan data contohnya tetap dipakai kedua
+layar tersebut.
 
 ## Menjalankan
 
