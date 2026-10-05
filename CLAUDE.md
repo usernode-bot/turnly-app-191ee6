@@ -153,7 +153,11 @@ same file — never hand-rolled.
   words live in `public/js/messages/en.js` and `id.js`, same keys in both.
   English is the default, Bahasa Indonesia the second language; the
   "Language" setting (English / Bahasa Indonesia / Follow system) is saved
-  on the device under `turnly.lang`, and "Follow system" means the viewer's
+  in the user profile on the device (`turnly.user`, `public/js/user-profile.js`;
+  its `language` field is 'en' | 'id' | null and maps onto the planned
+  `users.language` column), with the older device-wide `turnly.lang` read
+  as the fallback for devices that saved it before the profile existed,
+  and "Follow system" means the viewer's
   Homeroom locale, then the device language, then English. `?lang=en|id`
   forces a language for one page load (the Indonesian merge check uses it).
 - Messages are ICU: `{name}` variables and

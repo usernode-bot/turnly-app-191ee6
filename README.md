@@ -55,7 +55,10 @@ Fondasi tampilan, belum ada alur produk:
   `public/js/messages/en.js` dan `id.js` (format ICU, kunci sama di kedua
   berkas). Bahasa bawaan Inggris, bahasa Indonesia sebagai pilihan lewat
   pengaturan "Language" di layar (English / Bahasa Indonesia / Follow
-  system), tersimpan di perangkat. `npm test` menjaga kunci tetap sepadan,
+  system), tersimpan di profil pengguna di perangkat (`turnly.user`,
+  `public/js/user-profile.js` — field `language`-nya dipetakan ke kolom
+  `users.language` yang direncanakan), dengan `turnly.lang` lama sebagai
+  cadangan. `npm test` menjaga kunci tetap sepadan,
   bentuk jamak, dan tidak ada teks yang tertulis langsung di markup.
 
 Layar fondasi Tahap 1 sudah digantikan oleh Beranda dan Detail arisan;

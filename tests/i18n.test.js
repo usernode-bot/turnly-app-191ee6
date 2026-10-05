@@ -84,3 +84,74 @@ test('setChoice applies at once and notifies listeners', () => {
   i18n.setChoice('nope');
   assert.equal(i18n.getChoice(), 'en', 'an unknown choice is ignored');
 });
+
+// ── User-level language preference ─────────────────────────────────────────
+// The picker writes a user profile object ('turnly.user'), whose language
+// field maps onto the users.language column planned for the backend stage.
+// These tests re-require the runtime with a stand-in localStorage (the
+// module's Node seam) so the precedence and the write-through are checked
+// for real, not just the pure resolver.
+
+function freshI18n(storage) {
+  delete require.cache[require.resolve('../public/js/i18n.js')];
+  delete require.cache[require.resolve('../public/js/user-profile.js')];
+  globalThis.localStorage = storage;
+  return require('../public/js/i18n.js');
+}
+
+function memoryStorage() {
+  const mem = new Map();
+  return {
+    getItem: (k) => (mem.has(k) ? mem.get(k) : null),
+    setItem: (k, v) => mem.set(k, String(v)),
+    removeItem: (k) => mem.delete(k),
+  };
+}
+
+test.after(() => { delete globalThis.localStorage; });
+
+test('with nothing saved, the choice is system and the language is English', () => {
+  const fresh = freshI18n(memoryStorage());
+  assert.equal(fresh.getChoice(), 'system');
+  assert.equal(fresh.getLocale(), 'en', 'English stays the application default');
+});
+
+test('the profile language outranks the device-wide preference', () => {
+  const storage = memoryStorage();
+  storage.setItem('turnly.lang', 'en');
+  storage.setItem('turnly.user', JSON.stringify({ language: 'id' }));
+  const fresh = freshI18n(storage);
+  assert.equal(fresh.getChoice(), 'id');
+  assert.equal(fresh.getLocale(), 'id');
+});
+
+test('the device-wide preference applies when the profile has no language', () => {
+  const storage = memoryStorage();
+  storage.setItem('turnly.lang', 'id');
+  storage.setItem('turnly.user', JSON.stringify({ name: 'Rina' }));
+  const fresh = freshI18n(storage);
+  assert.equal(fresh.getChoice(), 'id');
+  assert.equal(fresh.getLocale(), 'id');
+});
+
+test('setChoice writes the profile language and keeps the device key in step', () => {
+  const storage = memoryStorage();
+  const fresh = freshI18n(storage);
+  fresh.setChoice('id');
+  assert.deepEqual(JSON.parse(storage.getItem('turnly.user')), { language: 'id' });
+  assert.equal(storage.getItem('turnly.lang'), 'id');
+  assert.equal(fresh.getLocale(), 'id');
+});
+
+test('Follow system clears the profile language and the device key', () => {
+  const storage = memoryStorage();
+  storage.setItem('turnly.lang', 'id');
+  storage.setItem('turnly.user', JSON.stringify({ language: 'id' }));
+  const fresh = freshI18n(storage);
+  fresh.setChoice('system');
+  assert.deepEqual(JSON.parse(storage.getItem('turnly.user')), { language: null });
+  assert.equal(storage.getItem('turnly.lang'), null);
+  assert.equal(fresh.getChoice(), 'system');
+  // No platform locale and no device languages in Node: English.
+  assert.equal(fresh.getLocale(), 'en');
+});
