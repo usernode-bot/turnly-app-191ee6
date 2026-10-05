@@ -9,7 +9,11 @@
  * All schedule arithmetic is on calendar dates in Asia/Jakarta (UTC+7, no
  * daylight saving), so plain YYYY-MM-DD day counts are exact.
  */
-(function () {
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.TurnlyDomain = api;
+})(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
 
   var IURAN_STATUS = {
@@ -25,8 +29,6 @@
     DANA_DISERAHKAN: 'dana_diserahkan',
   };
 
-  var BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
   function parseHari(iso) {
     // Parse 'YYYY-MM-DD' as UTC so day arithmetic is timezone-proof.
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
@@ -39,6 +41,10 @@
     return Math.round((parseHari(hingga) - parseHari(dari)) / 86400000);
   }
 
+  // THE one money formatter. Rupiah is always "Rp" plus dot thousands
+  // (Rp500.000) in every UI language, because the currency is rupiah and the
+  // users are in Indonesia. Should an English comma separator ever be wanted,
+  // this is the only line to change.
   function formatRupiah(nominal) {
     if (!Number.isInteger(nominal)) {
       throw new Error('Nominal harus bilangan bulat rupiah: ' + nominal);
@@ -46,11 +52,16 @@
     return 'Rp' + nominal.toLocaleString('id-ID');
   }
 
-  // '2026-10-07' -> '7 Okt' (Indonesian short date, no year).
-  function formatTanggalPendek(iso) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
-    if (!m) throw new Error('Tanggal harus berformat YYYY-MM-DD: ' + iso);
-    return Number(m[3]) + ' ' + BULAN_PENDEK[Number(m[2]) - 1];
+  // '2026-10-07' -> 'Oct 7' (en) or '7 Okt' (id): a short date without the
+  // year, in the active UI language. The ISO string is a Jakarta calendar
+  // date parsed as UTC midnight, so formatting in UTC gives that same day.
+  function formatTanggalPendek(iso, locale) {
+    var instant = parseHari(iso);
+    return new Intl.DateTimeFormat(locale || 'en', {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    }).format(new Date(instant));
   }
 
   // Days past the due date; 0 when not yet due. Derived, never stored.
@@ -110,8 +121,9 @@
     return anggotaDenganId(arisan, arisan.periode_aktif.penerima_anggota_id);
   }
 
-  window.TurnlyDomain = {
+  return {
     IURAN_STATUS: IURAN_STATUS,
+    parseHari: parseHari,
     PERIODE_STATUS: PERIODE_STATUS,
     selisihHari: selisihHari,
     hitungTelatHari: hitungTelatHari,
@@ -125,4 +137,4 @@
     totalTerkumpul: totalTerkumpul,
     penerimaPeriode: penerimaPeriode,
   };
-})();
+});

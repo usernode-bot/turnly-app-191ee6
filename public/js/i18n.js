@@ -1,71 +1,262 @@
-/* Turnly localization. EVERY user-visible string goes through t() so a
- * second language is one more dictionary, never a sweep of the markup.
- * Indonesian only for now, per the product brief.
+/* Turnly localization runtime. EVERY user-visible string goes through t():
+ * the words live in public/js/messages/{en,id}.js, this file only picks the
+ * language and formats the ICU subset those files use.
+ *
+ * Supported: {name} variables and {name, plural, =0{...} one{...} other{...}}
+ * with # for the formatted number. Options may nest variables. A key missing
+ * in the active language falls back to English, then to the key itself.
+ *
+ * Language choice: 'en', 'id' or 'system' (the default), saved on the
+ * device under localStorage 'turnly.lang'. 'system' means the viewer's
+ * Homeroom locale when set (usernode.getUserLocale), else the device
+ * language, else English; only the language subtag matters ("id-ID" -> id,
+ * anything else -> en). A ?lang=en|id URL parameter wins for this page load
+ * only and is never saved.
+ *
+ * Also loadable as a CommonJS module for the Node tests.
  */
-(function () {
+(function (root, factory) {
+  var api = factory(root);
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  if (root) root.TurnlyI18n = api;
+})(typeof window !== 'undefined' ? window : null, function (root) {
   'use strict';
 
-  var dictionaries = {
-    id: {
-      'app.nama': 'Turnly',
-      'app.tagline': 'Catat arisan dengan tenang',
-      'fondasi.subjudul': 'Pratinjau fondasi tampilan dan data contoh',
+  var DEFAULT_LOCALE = 'en';
+  var SUPPORTED = ['en', 'id'];
+  var STORAGE_KEY = 'turnly.lang';
+  var CHOICES = ['en', 'id', 'system'];
 
-      'iuran.label': 'Iuran yang harus dibayar',
-      'iuran.jatuh_tempo.lagi': 'Jatuh tempo {tanggal}, {n} hari lagi',
-      'iuran.jatuh_tempo.hari_ini': 'Jatuh tempo hari ini',
-      'iuran.jatuh_tempo.lewat': 'Lewat jatuh tempo {n} hari',
-      'iuran.lunas_semua': 'Semua iuran lunas',
-
-      'arisan.anda': 'Arisan Anda',
-      'arisan.lunas.dari': '{lunas} dari {total} lunas',
-      'arisan.periode.info': 'Periode {nomor} dari {total}',
-      'arisan.penerima': 'Penerima: {nama}',
-
-      'papan.judul': 'Papan status iuran',
-
-      'status.lunas': 'Lunas',
-      'status.menunggu': 'Menunggu konfirmasi',
-      'status.belum': 'Belum bayar',
-      'status.telat': 'Telat {n} hari',
-      'status.telat.1': 'Telat 1 hari',
-
-      'ket.lunas': 'Iuran periode ini diterima',
-      'ket.menunggu': 'Bukti terkirim, menunggu konfirmasi admin',
-      'ket.belum': 'Belum ada bukti iuran',
-      'ket.telat': 'Lewat jatuh tempo',
-      'keterangan.judul': 'Keterangan status',
-
-      'tag.anda': 'Anda',
-      'tag.admin': 'Admin',
-
-      'aksi.bayar': 'Bayar iuran',
-      'bayar.judul': 'Bayar iuran {arisan}',
-      'bayar.transfer_ke': 'Transfer ke',
-      'bayar.salin': 'Salin nomor rekening',
-      'bayar.batal': 'Batal',
-
-      'toast.rekening_tersalin': 'Nomor rekening disalin',
-      'demo.catatan': 'Tampilan berisi data contoh untuk mode demo.',
-    },
+  var messages = (root && root.TurnlyMessages) || {
+    en: require('./messages/en.js'),
+    id: require('./messages/id.js'),
   };
 
-  var locale = 'id';
+  // ── ICU subset ──────────────────────────────────────────────────────────
 
-  function interpolate(text, params) {
-    if (!params) return text;
-    return text.replace(/\{(\w+)\}/g, function (m, key) {
-      return Object.prototype.hasOwnProperty.call(params, key) ? String(params[key]) : m;
-    });
+  // Split a message into literal text and {...} argument blocks, honouring
+  // nested braces inside plural options.
+  function splitTopLevel(text) {
+    var parts = [];
+    var depth = 0;
+    var start = 0;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (ch === '{') {
+        if (depth === 0) {
+          if (i > start) parts.push({ literal: text.slice(start, i) });
+          start = i + 1;
+        }
+        depth++;
+      } else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          parts.push({ arg: text.slice(start, i) });
+          start = i + 1;
+        }
+        if (depth < 0) throw new Error('Unbalanced braces in message: ' + text);
+      }
+    }
+    if (depth !== 0) throw new Error('Unbalanced braces in message: ' + text);
+    if (start < text.length) parts.push({ literal: text.slice(start) });
+    return parts;
+  }
+
+  // 'one{in 1 day} other{in # days}' -> { one: 'in 1 day', other: 'in # days' }
+  function parsePluralOptions(text) {
+    var options = {};
+    var i = 0;
+    while (i < text.length) {
+      while (i < text.length && /\s/.test(text.charAt(i))) i++;
+      var nameStart = i;
+      while (i < text.length && text.charAt(i) !== '{' && !/\s/.test(text.charAt(i))) i++;
+      var name = text.slice(nameStart, i);
+      while (i < text.length && /\s/.test(text.charAt(i))) i++;
+      if (text.charAt(i) !== '{') throw new Error('Plural option without braces: ' + text);
+      var depth = 0;
+      var bodyStart = i + 1;
+      for (; i < text.length; i++) {
+        if (text.charAt(i) === '{') depth++;
+        else if (text.charAt(i) === '}') { depth--; if (depth === 0) break; }
+      }
+      options[name] = text.slice(bodyStart, i);
+      i++;
+    }
+    return options;
+  }
+
+  function formatNumber(value, locale) {
+    try { return new Intl.NumberFormat(locale).format(value); } catch (e) { return String(value); }
+  }
+
+  function pluralCategory(value, locale) {
+    try { return new Intl.PluralRules(locale).select(value); } catch (e) { return 'other'; }
+  }
+
+  function format(text, params, locale) {
+    params = params || {};
+    return splitTopLevel(text).map(function (part) {
+      if (part.literal !== undefined) return part.literal;
+      var arg = part.arg;
+      var comma = arg.indexOf(',');
+      if (comma === -1) {
+        var name = arg.trim();
+        return Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : '{' + name + '}';
+      }
+      var argName = arg.slice(0, comma).trim();
+      var rest = arg.slice(comma + 1);
+      var comma2 = rest.indexOf(',');
+      var type = (comma2 === -1 ? rest : rest.slice(0, comma2)).trim();
+      if (type !== 'plural') throw new Error('Unsupported ICU argument type "' + type + '" in: ' + text);
+      var options = parsePluralOptions(rest.slice(comma2 + 1));
+      var value = Number(params[argName]);
+      var chosen = options['=' + value];
+      if (chosen === undefined) chosen = options[pluralCategory(value, locale)];
+      if (chosen === undefined) chosen = options.other;
+      if (chosen === undefined) throw new Error('Plural without "other" in: ' + text);
+      return format(chosen.replace(/#/g, formatNumber(value, locale)), params, locale);
+    }).join('');
+  }
+
+  // ── Locale resolution ───────────────────────────────────────────────────
+
+  // Map any BCP-47 tag onto a supported locale by language subtag. 'in' is
+  // the legacy tag some Android builds still report for Indonesian.
+  function mapTag(tag) {
+    if (!tag || typeof tag !== 'string') return null;
+    var lang = tag.toLowerCase().split(/[-_]/)[0];
+    if (lang === 'id' || lang === 'in') return 'id';
+    if (lang === 'en') return 'en';
+    return null;
+  }
+
+  // The language for 'system': platform locale, then device languages, then
+  // the default. Unsupported languages fall through to the default.
+  function resolveSystem(platformLocale, deviceLanguages) {
+    var fromPlatform = mapTag(platformLocale);
+    if (fromPlatform) return fromPlatform;
+    var list = deviceLanguages || [];
+    for (var i = 0; i < list.length; i++) {
+      var mapped = mapTag(list[i]);
+      if (mapped) return mapped;
+    }
+    return DEFAULT_LOCALE;
+  }
+
+  // choice ('en'|'id'|'system'), an optional URL override, and the system
+  // inputs -> the locale to render.
+  function resolveLocale(choice, urlLocale, platformLocale, deviceLanguages) {
+    if (urlLocale && SUPPORTED.indexOf(urlLocale) !== -1) return urlLocale;
+    if (choice === 'en' || choice === 'id') return choice;
+    return resolveSystem(platformLocale, deviceLanguages);
+  }
+
+  function readChoice() {
+    try {
+      var saved = root && root.localStorage && root.localStorage.getItem(STORAGE_KEY);
+      return CHOICES.indexOf(saved) !== -1 ? saved : 'system';
+    } catch (e) { return 'system'; }
+  }
+
+  function writeChoice(choice) {
+    try {
+      if (!root || !root.localStorage) return;
+      if (choice === 'system') root.localStorage.removeItem(STORAGE_KEY);
+      else root.localStorage.setItem(STORAGE_KEY, choice);
+    } catch (e) { /* private mode: the choice simply lasts this visit */ }
+  }
+
+  function urlLocaleOf() {
+    try {
+      var value = new URLSearchParams(root.location.search).get('lang');
+      return SUPPORTED.indexOf(value) !== -1 ? value : null;
+    } catch (e) { return null; }
+  }
+
+  function deviceLanguages() {
+    var nav = root && root.navigator;
+    if (!nav) return [];
+    if (nav.languages && nav.languages.length) return Array.prototype.slice.call(nav.languages);
+    return nav.language ? [nav.language] : [];
+  }
+
+  // ── Runtime state ───────────────────────────────────────────────────────
+
+  var choice = readChoice();
+  var urlLocale = root ? urlLocaleOf() : null;
+  var platformLocale = null;
+  var locale = resolveLocale(choice, urlLocale, platformLocale, deviceLanguages());
+  var listeners = [];
+
+  function applyLocale(next) {
+    var changed = next !== locale;
+    locale = next;
+    if (root && root.document) root.document.documentElement.lang = locale;
+    if (!changed) return;
+    listeners.forEach(function (fn) { try { fn(locale); } catch (e) { console.error(e); } });
+    if (root && typeof root.CustomEvent === 'function') {
+      root.dispatchEvent(new root.CustomEvent('turnly:locale-changed', { detail: { locale: locale } }));
+    }
   }
 
   function t(key, params) {
-    var dict = dictionaries[locale] || {};
-    var text = Object.prototype.hasOwnProperty.call(dict, key) ? dict[key] : key;
-    return interpolate(text, params);
+    var dict = messages[locale] || {};
+    var text;
+    if (Object.prototype.hasOwnProperty.call(dict, key)) text = dict[key];
+    else if (Object.prototype.hasOwnProperty.call(messages.en || {}, key)) text = messages.en[key];
+    else return key;
+    return format(text, params, locale);
   }
 
-  document.documentElement.lang = locale;
+  function getLocale() { return locale; }
+  function getChoice() { return choice; }
+  // What the picker should show: the URL-forced language while it is in
+  // effect (the language actually in use), otherwise the saved choice.
+  function getEffectiveChoice() { return urlLocale || choice; }
 
-  window.TurnlyI18n = { t: t, locale: locale };
-})();
+  function setChoice(next) {
+    if (CHOICES.indexOf(next) === -1) return;
+    choice = next;
+    urlLocale = null; // an explicit choice ends the URL override for this visit
+    writeChoice(choice);
+    applyLocale(resolveLocale(choice, urlLocale, platformLocale, deviceLanguages()));
+  }
+
+  function setPlatformLocale(tag) {
+    platformLocale = tag || null;
+    applyLocale(resolveLocale(choice, urlLocale, platformLocale, deviceLanguages()));
+  }
+
+  function onChange(fn) { listeners.push(fn); }
+
+  if (root && root.document) {
+    root.document.documentElement.lang = locale;
+    // The platform locale arrives asynchronously; follow it in 'system' mode.
+    if (root.usernode && typeof root.usernode.getUserLocale === 'function') {
+      try {
+        Promise.resolve(root.usernode.getUserLocale()).then(function (res) {
+          setPlatformLocale(res && res.locale);
+        }, function () {});
+      } catch (e) { /* bridge absent: device language it is */ }
+    }
+    root.addEventListener('usernode:locale-changed', function (e) {
+      setPlatformLocale(e && e.detail && e.detail.locale);
+    });
+  }
+
+  return {
+    t: t,
+    format: format,
+    getLocale: getLocale,
+    getChoice: getChoice,
+    getEffectiveChoice: getEffectiveChoice,
+    setChoice: setChoice,
+    setPlatformLocale: setPlatformLocale,
+    onChange: onChange,
+    mapTag: mapTag,
+    resolveLocale: resolveLocale,
+    SUPPORTED: SUPPORTED,
+    DEFAULT_LOCALE: DEFAULT_LOCALE,
+    STORAGE_KEY: STORAGE_KEY,
+  };
+});

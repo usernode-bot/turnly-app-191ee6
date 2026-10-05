@@ -4,16 +4,30 @@
   "tests": [
     {
       "id": "foundation.default",
-      "name": "Fondasi renders",
+      "name": "Foundation renders",
       "path": "/",
       "expectText": "Arisan Keluarga Besar",
       "visual": true,
-      "impact": ["public/**", "styles/**", "tailwind.config.js"]
+      "impact": [
+        "public/**",
+        "styles/**",
+        "tailwind.config.js"
+      ]
     },
     {
-      "name": "Status chips with text",
+      "name": "Status chips with text (English default)",
       "path": "/",
+      "expectText": "Awaiting confirmation"
+    },
+    {
+      "name": "Indonesian renders",
+      "path": "/?lang=id",
       "expectText": "Menunggu konfirmasi"
+    },
+    {
+      "name": "Language picker present",
+      "path": "/",
+      "expectSelector": "#language-select"
     }
   ]
 }

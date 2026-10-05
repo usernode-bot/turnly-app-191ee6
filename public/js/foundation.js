@@ -9,7 +9,8 @@
   'use strict';
 
   var d = window.TurnlyDomain;
-  var t = window.TurnlyI18n.t;
+  var i18n = window.TurnlyI18n;
+  var t = i18n.t;
   var demo = window.TurnlyDemoData;
   var un = window.unNative || null;
 
@@ -29,16 +30,26 @@
     belum: 'chip-belum',
     telat: 'chip-telat',
   };
+  // Status identifiers mirror the database enum; the message keys are English.
+  var STATUS_MESSAGE = {
+    lunas: 'status.paid',
+    menunggu: 'status.awaiting',
+    belum: 'status.unpaid',
+    telat: 'status.late',
+  };
+  var LEGEND_MESSAGE = {
+    lunas: 'legend.paid',
+    menunggu: 'legend.awaiting',
+    belum: 'legend.unpaid',
+    telat: 'legend.late',
+  };
 
   function statusLabel(status) {
-    if (status.key === 'telat') {
-      return status.telatHari === 1 ? t('status.telat.1') : t('status.telat', { n: status.telatHari });
-    }
-    return t('status.' + status.key);
+    return t(STATUS_MESSAGE[status.key], { days: status.telatHari });
   }
 
   function statusKet(status) {
-    return t('ket.' + status.key);
+    return t(LEGEND_MESSAGE[status.key]);
   }
 
   function initials(nama) {
@@ -47,7 +58,7 @@
     return letters.join('').toUpperCase();
   }
 
-  // A status avatar. When labelled, it is announced as "Bu Rina, Belum bayar".
+  // A status avatar. When labelled, it is announced as "Bu Rina, Unpaid".
   function avatarEl(nama, status, opts) {
     var el = document.createElement('span');
     el.className = 'avatar ' + AVATAR_CLASS[status.key] + (opts && opts.mini ? ' avatar-sm' : '');
@@ -56,7 +67,7 @@
       el.setAttribute('aria-hidden', 'true'); // the row's chip already says the status
     } else {
       el.setAttribute('role', 'img');
-      el.setAttribute('aria-label', nama + ', ' + statusLabel(status));
+      el.setAttribute('aria-label', t('a11y.memberStatus', { name: nama, status: statusLabel(status) }));
     }
     return el;
   }
@@ -95,12 +106,16 @@
 
   function jatuhTempoText(arisan) {
     var jt = arisan.periode_aktif.tanggal_jatuh_tempo;
-    var tanggal = d.formatTanggalPendek(jt);
+    var tanggal = d.formatTanggalPendek(jt, i18n.getLocale());
     var n = d.selisihHari(HARI_INI, jt);
-    if (n === 0) return t('iuran.jatuh_tempo.hari_ini');
-    if (n < 0) return t('iuran.jatuh_tempo.lewat', { n: -n });
-    return t('iuran.jatuh_tempo.lagi', { tanggal: tanggal, n: n });
+    if (n === 0) return t('home.dueToday');
+    if (n < 0) return t('home.pastDue', { days: -n });
+    return t('home.dueIn', { date: tanggal, days: n });
   }
+
+  // The arisan the hero button pays for. The button is bound ONCE (below)
+  // and reads this, so re-rendering never stacks click listeners.
+  var arisanBayar = null;
 
   function renderHero() {
     var belumBayar = demo.arisan
@@ -122,8 +137,9 @@
     var tombol = document.getElementById('btn-bayar');
 
     if (!belumBayar.length) {
-      label.textContent = t('iuran.label');
-      nama.textContent = t('iuran.lunas_semua');
+      arisanBayar = null;
+      label.textContent = t('home.dueTitle');
+      nama.textContent = t('home.allPaid');
       nominal.hidden = true;
       tempo.hidden = true;
       tombol.hidden = true;
@@ -131,18 +147,23 @@
     }
 
     var pilihan = belumBayar[0];
-    label.textContent = t('iuran.label');
+    arisanBayar = pilihan.arisan;
+    label.textContent = t('home.dueTitle');
     nama.textContent = pilihan.arisan.nama;
     nominal.textContent = d.formatRupiah(pilihan.arisan.nominal);
     tempo.textContent = jatuhTempoText(pilihan.arisan);
-    tombol.textContent = t('aksi.bayar');
-    tombol.addEventListener('click', function () { bukaSheetBayar(pilihan.arisan); });
+    tombol.textContent = t('pay.action');
+    nominal.hidden = false;
+    tempo.hidden = false;
+    tombol.hidden = false;
   }
 
   // ── "Arisan Anda": one row per arisan ────────────────────────────────────
   function renderDaftarArisan() {
-    document.getElementById('arisan-anda-label').textContent = t('arisan.anda');
+    document.getElementById('arisan-anda-label').textContent = t('groups.title');
+    document.getElementById('groups-explainer').textContent = t('groups.explainer');
     var ul = document.getElementById('daftar-arisan');
+    ul.textContent = '';
 
     demo.arisan.forEach(function (arisan) {
       var milik = statusPengguna(arisan);
@@ -152,9 +173,12 @@
       kiri.appendChild(avatarEl(milik.anggota.nama_tampil, milik.status, { mini: true }));
       var teks = el('div', 'min-w-0');
       teks.appendChild(el('p', 'truncate text-body font-medium', arisan.nama));
-      teks.appendChild(el('p', 'truncate text-small text-muted',
-        t('arisan.lunas.dari', { lunas: d.hitungLunas(arisan), total: arisan.anggota.length })
-        + ' · ' + t('arisan.periode.info', { nomor: arisan.periode_aktif.nomor, total: arisan.total_periode })));
+      teks.appendChild(el('p', 'truncate text-small text-muted', t('groups.summary', {
+        paid: d.hitungLunas(arisan),
+        total: arisan.anggota.length,
+        round: arisan.periode_aktif.nomor,
+        rounds: arisan.total_periode,
+      })));
       kiri.appendChild(teks);
 
       li.appendChild(kiri);
@@ -165,16 +189,18 @@
 
   // ── Papan status: every member of every demo arisan, in giliran order ───
   function renderPapan() {
-    document.getElementById('papan-judul').textContent = t('papan.judul');
+    document.getElementById('papan-judul').textContent = t('board.title');
     var wadah = document.getElementById('papan-status');
+    wadah.textContent = '';
 
     demo.arisan.forEach(function (arisan) {
       var section = el('section', 'mb-6');
       section.appendChild(el('h3', 'section-label', arisan.nama));
       var penerima = d.penerimaPeriode(arisan);
-      section.appendChild(el('p', 'mb-2 px-1 text-small text-muted',
-        t('arisan.periode.info', { nomor: arisan.periode_aktif.nomor, total: arisan.total_periode })
-        + (penerima ? ' · ' + t('arisan.penerima', { nama: penerima.nama_tampil }) : '')));
+      var periodeParams = { round: arisan.periode_aktif.nomor, rounds: arisan.total_periode };
+      section.appendChild(el('p', 'mb-2 px-1 text-small text-muted', penerima
+        ? t('board.roundWithRecipient', { round: periodeParams.round, rounds: periodeParams.rounds, name: penerima.nama_tampil })
+        : t('board.round', periodeParams)));
 
       var ul = el('ul', 'list');
       d.anggotaUrut(arisan).forEach(function (anggota) {
@@ -187,7 +213,7 @@
 
         var namaBaris = el('div', 'flex min-w-0 flex-wrap items-center gap-1.5');
         namaBaris.appendChild(el('p', 'truncate text-body font-medium', anggota.nama_tampil));
-        if (anggota.user_id === PENGGUNA_ID) namaBaris.appendChild(tagEl(t('tag.anda')));
+        if (anggota.user_id === PENGGUNA_ID) namaBaris.appendChild(tagEl(t('tag.you')));
         if (anggota.id === arisan.admin_id) namaBaris.appendChild(tagEl(t('tag.admin')));
         kiri.appendChild(namaBaris);
 
@@ -203,14 +229,15 @@
 
   // ── Keterangan: the four statuses, avatar + chip + one sentence ──────────
   function renderKeterangan() {
-    document.getElementById('keterangan-label').textContent = t('keterangan.judul');
+    document.getElementById('keterangan-label').textContent = t('legend.title');
     var ul = document.getElementById('daftar-keterangan');
+    ul.textContent = '';
 
     STATUS_KEYS.forEach(function (key) {
       var status = { key: key, telatHari: 3 };
       var li = el('li', 'list-row justify-between');
       var kiri = el('div', 'flex min-w-0 items-center gap-3');
-      var contoh = avatarEl('Contoh', status, { mini: true });
+      var contoh = avatarEl(t('legend.sampleName'), status, { mini: true });
       contoh.setAttribute('aria-hidden', 'true');
       kiri.appendChild(contoh);
       kiri.appendChild(el('p', 'min-w-0 text-small text-muted', statusKet(status)));
@@ -240,7 +267,7 @@
   }
 
   function salinRekening(teks) {
-    var selesai = function () { toast(t('toast.rekening_tersalin')); };
+    var selesai = function () { toast(t('toast.accountCopied')); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(teks).then(selesai, function () { salinFallback(teks, selesai); });
     } else {
@@ -260,12 +287,12 @@
   }
 
   function isiSheetBayar(root, arisan) {
-    root.querySelector('#sheet-judul').textContent = t('bayar.judul', { arisan: arisan.nama });
+    root.querySelector('#sheet-judul').textContent = t('pay.title', { group: arisan.nama });
     root.querySelector('#sheet-nominal').textContent = d.formatRupiah(arisan.nominal);
-    root.querySelector('#sheet-transfer-label').textContent = t('bayar.transfer_ke');
+    root.querySelector('#sheet-transfer-label').textContent = t('pay.transferTo');
     root.querySelector('#sheet-rekening').textContent = arisan.rekening_kas;
-    root.querySelector('#btn-salin').textContent = t('bayar.salin');
-    root.querySelector('#btn-batal').textContent = t('bayar.batal');
+    root.querySelector('#btn-salin').textContent = t('pay.copyAccount');
+    root.querySelector('#btn-batal').textContent = t('pay.cancel');
   }
 
   function bukaSheetBayar(arisan) {
@@ -300,12 +327,36 @@
     dialog.showModal();
   }
 
+  // ── Language setting: a select that applies on change and is saved ───────
+  function renderLanguage() {
+    document.getElementById('language-label').textContent = t('language.title');
+    var select = document.getElementById('language-select');
+    select.querySelector('option[value="en"]').textContent = t('language.english');
+    select.querySelector('option[value="id"]').textContent = t('language.indonesian');
+    select.querySelector('option[value="system"]').textContent = t('language.system');
+    select.value = i18n.getEffectiveChoice();
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
-  document.getElementById('app-title').textContent = t('app.nama');
-  document.getElementById('app-subtitle').textContent = t('fondasi.subjudul');
-  document.getElementById('demo-catatan').textContent = t('demo.catatan');
-  renderHero();
-  renderDaftarArisan();
-  renderPapan();
-  renderKeterangan();
+  function render() {
+    document.title = t('app.name');
+    document.getElementById('app-title').textContent = t('app.name');
+    document.getElementById('app-subtitle').textContent = t('foundation.subtitle');
+    document.getElementById('demo-catatan').textContent = t('demo.note');
+    renderHero();
+    renderDaftarArisan();
+    renderPapan();
+    renderKeterangan();
+    renderLanguage();
+  }
+
+  document.getElementById('btn-bayar').addEventListener('click', function () {
+    if (arisanBayar) bukaSheetBayar(arisanBayar);
+  });
+  document.getElementById('language-select').addEventListener('change', function (e) {
+    i18n.setChoice(e.target.value);
+    renderLanguage(); // the select text itself, even if the locale did not change
+  });
+  i18n.onChange(render);
+  render();
 })();
