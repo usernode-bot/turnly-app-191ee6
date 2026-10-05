@@ -149,11 +149,35 @@ same file — never hand-rolled.
   Asia/Jakarta (UTC+7, no DST) — parse `YYYY-MM-DD` as UTC
   (`parseHari`/`selisihHari` in `public/js/domain.js`).
 - All UI text goes through `public/js/i18n.js` (`t(key, params)`); no
-  hardcoded copy in markup. Indonesian for now, structured for more
-  languages later.
+  hardcoded copy in markup or screen scripts (`npm test` enforces it). The
+  words live in `public/js/messages/en.js` and `id.js`, same keys in both.
+  English is the default, Bahasa Indonesia the second language; the
+  "Language" setting (English / Bahasa Indonesia / Follow system) is saved
+  on the device under `turnly.lang`, and "Follow system" means the viewer's
+  Homeroom locale, then the device language, then English. `?lang=en|id`
+  forces a language for one page load (the Indonesian merge check uses it).
+- Messages are ICU: `{name}` variables and
+  `{n, plural, one{...} other{# ...}}`. Never build a sentence by
+  concatenating two messages or by computing a key with `+`; add a key that
+  holds the whole sentence. Indonesian has no plural forms, so its messages
+  use plain variables. Short dates come from `formatTanggalPendek(iso,
+  locale)` via `Intl` ("Oct 7" / "7 Okt"); money never changes with the
+  language (`formatRupiah` is the one place).
+- English glossary, fixed: arisan stays "arisan" (explained once on Home as
+  "a rotating savings group"); iuran = contribution; giliran = turn;
+  periode = round; penerima = recipient; dana diserahkan = payout handed
+  over; admin = organizer in prose, "Admin" on the tag; anggota = member;
+  bukti transfer = proof of transfer (short: proof); rekening kas = group
+  account; denda = late fee; undian = draw; jatuh tempo = due date; Lunas =
+  Paid; Menunggu konfirmasi = Awaiting confirmation; Belum bayar = Unpaid;
+  Telat N hari = Late N days; tabs Status / Turns / History; Ingatkan /
+  Konfirmasi / Tolak = Remind / Confirm / Reject; the "Anda" tag = You.
+  Sentence case, plain friendly English, no exclamation marks. Honorifics in
+  member names (Bu, Pak, Mas, Mba) and user-written arisan names are data,
+  never translated.
 - Demo data lives in `public/js/demo-data.js` and is anchored to
-  `DEMO_HARI_INI = '2026-10-05'` so relative labels ("2 hari lagi",
-  "Telat 3 hari") render the same on any day. Screens pass that anchor,
+  `DEMO_HARI_INI = '2026-10-05'` so relative labels ("in 2 days" /
+  "2 hari lagi", "Late 3 days" / "Telat 3 hari") render the same on any day. Screens pass that anchor,
   not today's date, when rendering demo rows. Names and rekening numbers
   in demo data are obviously fake; never clone real users into it.
 - Domain JS shapes mirror the planned database tables field for field

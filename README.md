@@ -27,7 +27,12 @@ Fondasi tampilan, belum ada alur produk:
   Keluarga Besar dan Arisan Kantor Lantai 3), dengan jangkar
   `DEMO_HARI_INI` agar label relatif ("2 hari lagi", "Telat 3 hari")
   stabil di semua tampilan.
-- **Lokalisasi** — semua teks lewat `public/js/i18n.js` (bahasa Indonesia).
+- **Lokalisasi** — semua teks lewat `public/js/i18n.js`; kata-katanya di
+  `public/js/messages/en.js` dan `id.js` (format ICU, kunci sama di kedua
+  berkas). Bahasa bawaan Inggris, bahasa Indonesia sebagai pilihan lewat
+  pengaturan "Language" di layar (English / Bahasa Indonesia / Follow
+  system), tersimpan di perangkat. `npm test` menjaga kunci tetap sepadan,
+  bentuk jamak, dan tidak ada teks yang tertulis langsung di markup.
 
 Layar fondasi di `/` adalah pratinjau komponen di atas data contoh; tahap
 berikutnya menggantinya dengan Beranda dan Detail arisan yang sesungguhnya.
@@ -37,6 +42,7 @@ berikutnya menggantinya dengan Beranda dan Detail arisan yang sesungguhnya.
 ```sh
 npm ci --include=dev
 npm run build   # kompilasi Tailwind ke public/tailwind.css
+npm test        # uji lokalisasi dan domain (node --test)
 npm start       # node server.js, PORT=3000
 ```
 

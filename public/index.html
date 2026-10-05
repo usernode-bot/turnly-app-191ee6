@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -106,8 +106,8 @@
 <body class="min-h-screen bg-ground text-fg">
   <!-- Tahap 1 (Fondasi): a preview of the design system on the demo data.
        Every string is filled by public/js/foundation.js from i18n.js — no
-       hardcoded copy here. Tahap 2 replaces this screen with the real
-       Beranda and Detail arisan. -->
+       hardcoded copy here (tests/hardcoded-strings.test.js enforces it).
+       Tahap 2 replaces this screen with the real Beranda and Detail arisan. -->
   <main class="mx-auto flex max-w-md flex-col gap-8 px-4 pb-10 pt-8">
 
     <header class="flex flex-col gap-1">
@@ -127,6 +127,9 @@
 
     <section>
       <h2 id="arisan-anda-label" class="section-label"></h2>
+      <!-- First appearance of "arisan" on this screen: one plain sentence
+           saying what it is. -->
+      <p id="groups-explainer" class="mb-2 px-1 text-small text-muted"></p>
       <ul id="daftar-arisan" class="list"></ul>
     </section>
 
@@ -138,6 +141,17 @@
     <section>
       <h2 id="keterangan-label" class="section-label"></h2>
       <ul id="daftar-keterangan" class="list"></ul>
+    </section>
+
+    <!-- The language setting: applies on change, saved on this device. Moves
+         to the Settings screen when Tahap 2 adds one. -->
+    <section>
+      <label id="language-label" for="language-select" class="section-label block"></label>
+      <select id="language-select" class="field">
+        <option value="en"></option>
+        <option value="id"></option>
+        <option value="system"></option>
+      </select>
     </section>
 
     <p id="demo-catatan" class="text-center text-small text-muted"></p>
@@ -159,6 +173,8 @@
     </div>
   </template>
 
+  <script src="/js/messages/en.js"></script>
+  <script src="/js/messages/id.js"></script>
   <script src="/js/i18n.js"></script>
   <script src="/js/domain.js"></script>
   <script src="/js/demo-data.js"></script>
