@@ -45,23 +45,40 @@ module.exports = {
     extend: {
       colors: {
         ground: token('ground'), // the page
-        surface: token('surface'), // lists, cards, fields
-        raised: token('raised'), // hovers, badges
+        surface: token('surface'), // lists, fields
+        raised: token('raised'), // badges, hovers
         fg: token('fg'), // text
         muted: token('muted'), // secondary text
         line: token('line'), // borders, dividers, skeletons
-        accent: token('accent'), // the one accent: the primary action
+        accent: token('accent'), // the one accent: the primary action (fill, not text)
         'on-accent': token('on-accent'), // text on the accent
-        danger: token('danger'),
+        success: token('success'), // status: lunas
+        'on-success': token('on-success'), // text on a filled success avatar
+        'success-soft': token('success-soft'), // chip-lunas background
+        wait: token('wait'), // status: menunggu konfirmasi
+        'wait-soft': token('wait-soft'), // chip-menunggu background
+        danger: token('danger'), // status: telat, destructive
         'on-danger': token('on-danger'),
+        'danger-soft': token('danger-soft'), // chip-telat background
+        hero: token('hero'), // the hero payment block
+        'hero-fg': token('hero-fg'), // text on the hero block
+        'hero-muted': token('hero-muted'), // secondary text on the hero block
         focus: token('focus'), // the keyboard focus ring
       },
-      // The type scale: four sizes, and nothing in between.
+      // The type scale: four sizes, and nothing in between. Sized so body
+      // text never drops below 15px, small labels below 13px, screen titles
+      // sit at 19px and big nominal amounts at 36px.
       fontSize: {
-        small: ['0.875rem', { lineHeight: '1.25rem' }],
-        body: ['1rem', { lineHeight: '1.5rem' }],
-        heading: ['1.25rem', { lineHeight: '1.75rem', fontWeight: '600' }],
-        title: ['1.75rem', { lineHeight: '2.25rem', fontWeight: '700' }],
+        small: ['0.8125rem', { lineHeight: '1.125rem' }],
+        body: ['0.9375rem', { lineHeight: '1.5rem' }],
+        heading: ['1.1875rem', { lineHeight: '1.625rem', fontWeight: '600' }],
+        title: ['2.25rem', { lineHeight: '2.75rem', fontWeight: '700' }],
+      },
+      fontFamily: {
+        // Titles and big numbers: Bricolage Grotesque. Body: Figtree.
+        // Both fall back to the system sans if the webfont cannot load.
+        display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+        body: ['Figtree', 'system-ui', 'sans-serif'],
       },
     },
   },

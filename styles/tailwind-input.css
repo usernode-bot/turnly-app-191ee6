@@ -13,89 +13,134 @@
 @tailwind utilities;
 
 /* ── Colour tokens ────────────────────────────────────────────────────────
- * This app's palette, defined once. Each value is "R G B"; tailwind.config.js
+ * Turnly's palette, defined once. Each value is "R G B"; tailwind.config.js
  * names them (bg-ground, bg-surface, text-fg, text-muted, border-line,
  * bg-accent with text-on-accent, ...). :root is the light look, and .dark,
  * which the theme script in public/index.html sets on <html>, the dark one.
  *
- * Re-theme the app HERE: change the values, keep the names. The defaults
- * (warm greys, one teal accent) are a quiet starting point, not a look.
- * Keep every text pair at 4.5:1 or more in both looks: fg and muted on
- * ground, surface and raised; accent and danger on ground and surface;
- * on-accent on accent; on-danger on danger.
+ * Light: latar lavender-muda #F5F4F9, permukaan putih, tinta indigo
+ * #222B5A, aksen kunyit #F0A202. Dark: navy #141834 / #1D2347, aksen
+ * kuning #F6B93B. Re-theme the app HERE: change the values, keep the names.
+ *
+ * Keep every TEXT pair at 4.5:1 or more in both looks: fg and muted on
+ * ground, surface and raised; success/wait/danger on their -soft chip
+ * backgrounds; on-accent on accent; on-success on success; hero-fg and
+ * hero-muted on hero. Note the accent is a FILL colour only — never use
+ * text-accent on a light surface (it fails contrast there).
  *
  * Adopting the native UI kit later? Point its --un-accent and
  * --un-accent-contrast at the accent and on-accent tokens.
  */
 @layer base {
   :root {
-    --ground: 250 250 249;    /* the page */
-    --surface: 255 255 255;   /* lists, cards, fields */
-    --raised: 245 245 244;    /* hovers, badges */
-    --fg: 28 25 23;           /* text */
-    --muted: 87 83 78;        /* secondary text */
-    --line: 231 229 228;      /* borders, dividers, skeletons */
-    --accent: 15 118 110;     /* the one accent */
-    --on-accent: 255 255 255; /* text on the accent */
-    --danger: 185 28 28;
+    --ground: 245 244 249;    /* #F5F4F9 the page */
+    --surface: 255 255 255;   /* #FFFFFF lists, fields */
+    --raised: 237 236 246;    /* #EDECF6 badges, hovers */
+    --fg: 34 43 90;           /* #222B5A text */
+    --muted: 90 96 134;       /* #5A6086 secondary text */
+    --line: 218 217 231;      /* #DAD9E7 borders, dividers, skeletons */
+    --accent: 240 162 2;      /* #F0A202 kunyit, the one accent */
+    --on-accent: 34 43 90;    /* #222B5A text on the accent */
+    --success: 27 127 82;     /* #1B7F52 lunas */
+    --on-success: 255 255 255; /* text on a filled success avatar */
+    --success-soft: 232 248 241; /* #E8F8F1 chip-lunas background */
+    --wait: 154 98 0;         /* #9A6200 menunggu konfirmasi */
+    --wait-soft: 253 241 210; /* #FDF1D2 chip-menunggu background */
+    --danger: 192 53 43;      /* #C0352B telat */
     --on-danger: 255 255 255;
-    --focus: 13 148 136;      /* the keyboard focus ring */
+    --danger-soft: 251 227 224; /* #FBE3E0 chip-telat background */
+    --hero: 34 43 90;         /* #222B5A the hero payment block */
+    --hero-fg: 245 244 249;   /* #F5F4F9 text on the hero block */
+    --hero-muted: 185 190 224; /* #B9BEE0 secondary text on the hero block */
+    --focus: 34 43 90;        /* the keyboard focus ring */
+
+    /* The usernode-native kit's chrome, pointed at this app's tokens. */
+    --un-accent: rgb(var(--accent));
+    --un-accent-contrast: rgb(var(--on-accent));
+    --un-sheet-bg: rgb(var(--surface));
+    --un-group-bg: rgb(var(--surface));
+    --un-muted: rgb(var(--muted));
+    --un-hairline: rgb(var(--line));
   }
   .dark {
-    --ground: 12 10 9;
-    --surface: 28 25 23;
-    --raised: 41 37 36;
-    --fg: 245 245 244;
-    --muted: 168 162 158;
-    --line: 68 64 60;
-    --accent: 45 212 191;
-    --on-accent: 4 47 46;
-    --danger: 248 113 113;
-    --on-danger: 69 10 10;
-    --focus: 94 234 212;
+    --ground: 20 24 52;       /* #141834 */
+    --surface: 29 35 71;      /* #1D2347 */
+    --raised: 38 46 99;       /* #262E63 */
+    --fg: 236 235 247;        /* #ECEBF7 */
+    --muted: 166 171 204;     /* #A6ABCC */
+    --line: 47 54 104;        /* #2F3668 */
+    --accent: 246 185 59;     /* #F6B93B */
+    --on-accent: 26 31 69;    /* #1A1F45 */
+    --success: 85 200 144;    /* #55C890 */
+    --on-success: 10 31 21;   /* dark ink on a filled success avatar */
+    --success-soft: 23 53 42; /* dark green blend */
+    --wait: 246 185 59;       /* #F6B93B */
+    --wait-soft: 54 48 27;    /* dark yellow blend */
+    --danger: 255 130 121;    /* #FF8279 */
+    --on-danger: 58 32 32;
+    --danger-soft: 58 32 32;  /* dark red blend */
+    --hero: 38 46 99;         /* #262E63 */
+    --hero-fg: 245 244 249;
+    --hero-muted: 185 190 224; /* #B9BEE0 */
+    --focus: 246 185 59;
+
+    --un-accent: rgb(var(--accent));
+    --un-accent-contrast: rgb(var(--on-accent));
+    --un-sheet-bg: rgb(var(--surface));
+    --un-group-bg: rgb(var(--surface));
+    --un-muted: rgb(var(--muted));
+    --un-hairline: rgb(var(--line));
   }
   /* el.hidden = true hides an element even when a class gives it a display
      (flex, the components below). */
   [hidden]:where(:not([hidden="until-found"])) {
     display: none !important;
   }
+  body {
+    @apply bg-ground font-body text-fg antialiased;
+  }
 }
 
 /* ── Components ───────────────────────────────────────────────────────────
- * A small starting kit on the tokens. Use these rather than restyling the
+ * Turnly's base kit on the tokens. Use these rather than restyling the
  * same thing by hand, add to them sparingly, and change a component here
- * rather than one copy of it. Type: text-title, text-heading, text-body and
- * text-small (tailwind.config.js), nothing in between.
+ * rather than one copy of it. Type: text-small, text-body, text-heading
+ * and text-title (tailwind.config.js), nothing in between. Titles and big
+ * amounts add font-display.
  */
 @layer components {
-  /* Buttons: one primary per screen, the rest secondary. At least 44 px
-     each way, so they are easy to tap. */
+  /* Buttons: one primary per screen, the rest secondary. Primary corners
+     14px and 48px tall; secondary corners 10px and 44px tall, so both
+     clear the 44px tap target. The press response is behind motion-safe:
+     with "reduce motion" the button simply changes colour. */
   .btn-primary,
   .btn-secondary {
-    @apply inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg px-4 text-body font-medium
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center gap-2 px-4 text-body font-medium
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2
       focus-visible:ring-offset-ground disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
-    @apply bg-accent text-on-accent hover:brightness-95;
+    @apply min-h-12 rounded-[14px] bg-accent text-on-accent hover:brightness-95
+      motion-safe:transition-transform motion-safe:active:scale-[0.98];
   }
   .btn-secondary {
-    @apply border border-line bg-surface text-fg hover:bg-raised;
+    @apply rounded-[10px] border border-line bg-surface text-fg hover:bg-raised;
   }
 
   /* Text inputs, selects and textareas: <input class="field">, 44 px tall. */
   .field {
-    @apply block min-h-11 w-full rounded-lg border border-line bg-surface px-3 py-2 text-body text-fg
+    @apply block min-h-11 w-full rounded-[10px] border border-line bg-surface px-3 py-2 text-body text-fg
       placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-focus;
   }
 
   /* A grouped list: <ul class="list"> of <li class="list-row">. The usual
-     way to show several things; prefer it to a stack of cards. */
+     way to show several things; rows are separated by a thin line, never a
+     stack of uniform cards. */
   .list {
     @apply divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface;
   }
   .list-row {
-    @apply flex min-h-11 items-center gap-3 px-4 py-3;
+    @apply flex min-h-12 items-center gap-3 px-4 py-3;
   }
 
   /* A card: one self-contained thing, usually something you tap. Most
@@ -104,9 +149,63 @@
     @apply rounded-xl border border-line bg-surface p-4;
   }
 
+  /* The hero payment block: indigo (dark look: lighter navy), with the
+     app's signature asymmetric corners — three large, one small. */
+  .hero {
+    @apply rounded-[24px] rounded-br-[6px] bg-hero p-5 text-hero-fg;
+  }
+
   /* The label above a section: sentence case, never uppercase or tracked. */
   .section-label {
     @apply mb-2 px-1 text-small font-medium text-muted;
+  }
+
+  /* Status chips: fully rounded, ALWAYS with the status word inside —
+     colour is never the only signal. One per status. */
+  .chip {
+    @apply inline-flex shrink-0 items-center rounded-full px-3 py-1 text-small font-medium;
+  }
+  .chip-lunas {
+    @apply bg-success-soft text-success;
+  }
+  .chip-menunggu {
+    @apply bg-wait-soft text-wait;
+  }
+  .chip-belum {
+    @apply bg-raised text-fg;
+  }
+  .chip-telat {
+    @apply bg-danger-soft text-danger;
+  }
+
+  /* Status avatars: the initial circle used in lists and, later, in the
+     lingkaran giliran. The four states differ by more than colour:
+     - lunas: filled green, dark/white ink;
+     - menunggu: surface fill with a DASHED ochre outline;
+     - belum: surface fill with a SOLID grey-blue outline;
+     - telat: pink fill with a solid red outline and red ink. */
+  .avatar {
+    @apply inline-flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full text-small font-semibold;
+  }
+  .avatar-sm {
+    @apply h-7 w-7;
+  }
+  .avatar-lunas {
+    @apply bg-success text-on-success;
+  }
+  .avatar-menunggu {
+    @apply border-2 border-dashed border-wait bg-surface text-fg;
+  }
+  .avatar-belum {
+    @apply border-2 border-muted bg-surface text-fg;
+  }
+  .avatar-telat {
+    @apply border-2 border-danger bg-danger-soft text-danger;
+  }
+
+  /* A small tag inside a row ("Anda", "Admin"). */
+  .tag {
+    @apply inline-flex shrink-0 items-center rounded-full bg-raised px-2 py-0.5 text-small text-muted;
   }
 
   /* The states of anything that loads data. Show exactly one at a time:
@@ -122,5 +221,16 @@
   .state-empty,
   .state-error {
     @apply flex flex-col items-center gap-2 px-4 py-8 text-center;
+  }
+
+  /* Fallback bottom sheet for when the usernode-native kit cannot load
+     (a plain local run without the platform edge). Staging and production
+     always get the real kit; this only keeps local development usable. */
+  dialog.sheet-fallback {
+    @apply fixed inset-x-0 bottom-0 m-0 max-h-[85vh] w-full max-w-md border-0 bg-transparent p-0
+      backdrop:bg-black/40;
+  }
+  dialog.sheet-fallback > div {
+    @apply rounded-t-2xl bg-surface;
   }
 }

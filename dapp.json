@@ -1,4 +1,19 @@
 {
   "description": "Simplifies managing arisan groups and rotating savings contributions",
-  "secrets": []
+  "secrets": [],
+  "tests": [
+    {
+      "id": "foundation.default",
+      "name": "Fondasi renders",
+      "path": "/",
+      "expectText": "Arisan Keluarga Besar",
+      "visual": true,
+      "impact": ["public/**", "styles/**", "tailwind.config.js"]
+    },
+    {
+      "name": "Status chips with text",
+      "path": "/",
+      "expectText": "Menunggu konfirmasi"
+    }
+  ]
 }

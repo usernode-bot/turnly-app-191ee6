@@ -1,29 +1,47 @@
-# Turnly App
+# Turnly
 
-> **Starter template** — this repo was scaffolded by Homeroom Social
-> Vibecoding. Everything in it is placeholder example code until the
-> app's first real feature is built.
+Aplikasi arisan digital: mencatat giliran, iuran, pengingat bayar, dan
+riwayat siapa yang sudah mendapat giliran. Dibangun di atas Homeroom
+(web app, vanilla JS + Tailwind yang dikompilasi saat build).
 
-The scaffold is a small working demo that proves the plumbing works:
+## Tahap 1 — Fondasi (sekarang)
 
-- **Sign-in** — the server verifies the platform-issued user token
-  (an RS256 JWT) on every request, so the app already knows who is
-  using it. No accounts to build.
-- **Database** — the app has its own private Postgres database; the
-  demo stores button presses in a `presses` table.
-- **Live API** — two example routes (`/api/press`,
-  `/api/leaderboard`) read and write through a real Express server.
-- **Styling** — Tailwind CSS, precompiled by `npm run build` during
-  image creation with either Kubernetes/Paketo or standalone Docker, in a
-  light and a dark look that follow the viewer's Homeroom theme.
+Fondasi tampilan, belum ada alur produk:
 
-## Replacing the template
+- **Tema** — palet terang dan gelap dari brief (aksen kunyit `#F0A202` /
+  `#F6B93B`, tinta indigo `#222B5A`), mengikuti tema Homeroom penonton.
+  Token warna di `styles/tailwind-input.css`, nama token di
+  `tailwind.config.js`.
+- **Huruf** — Bricolage Grotesque (judul dan angka besar) dan Figtree
+  (isi teks), dimuat dari Google Fonts dengan fallback system sans.
+- **Komponen dasar** — tombol utama (sudut 14) dan sekunder (sudut 10),
+  chip status bulat penuh yang selalu memuat teks, avatar status dengan
+  empat pola yang dibedakan bukan hanya warna, baris daftar berpemisah
+  garis tipis, blok hero bersudut tak simetris, bottom sheet dan toast
+  dari UI kit platform (`usernode-native`).
+- **Model domain** — `public/js/domain.js`: enum status, `formatRupiah`
+  (rupiah bulat, tanpa desimal), hitungan telat yang selalu diturunkan
+  dari tanggal jatuh tempo. Nama field sama persis dengan tabel database
+  yang direncanakan, supaya tahap backend menempel tanpa penulisan ulang.
+- **Data contoh** — `public/js/demo-data.js`: dua arisan demo (Arisan
+  Keluarga Besar dan Arisan Kantor Lantai 3), dengan jangkar
+  `DEMO_HARI_INI` agar label relatif ("2 hari lagi", "Telat 3 hari")
+  stabil di semua tampilan.
+- **Lokalisasi** — semua teks lewat `public/js/i18n.js` (bahasa Indonesia).
 
-To change this app, ask Homeroom bot: open the app on Homeroom, tap the
-Homeroom icon in the header, then **Ask for a change**, and describe the
-app you want in plain English. The template will be replaced with your
-real app. You can also run
-Claude Code against this repo directly; start with `CLAUDE.md`, which
-carries the app-specific notes and points at the platform rules.
+Layar fondasi di `/` adalah pratinjau komponen di atas data contoh; tahap
+berikutnya menggantinya dengan Beranda dan Detail arisan yang sesungguhnya.
 
-Once the real app exists, rewrite this README to describe it.
+## Menjalankan
+
+```sh
+npm ci --include=dev
+npm run build   # kompilasi Tailwind ke public/tailwind.css
+npm start       # node server.js, PORT=3000
+```
+
+## Menambah perubahan
+
+Buka aplikasi di Homeroom, ketuk ikon Homeroom lalu **Ask for a change**,
+atau jalankan Claude Code langsung terhadap repo ini — mulai dari
+`CLAUDE.md` untuk catatan khusus aplikasi ini.
