@@ -188,7 +188,12 @@
   /* Status chips: fully rounded, ALWAYS with the status word inside —
      colour is never the only signal. One per status. */
   .chip {
-    @apply inline-flex shrink-0 items-center rounded-full px-3 py-1 text-small font-medium;
+    /* max-w-full: at 200% system text scale a long status ("Awaiting
+         confirmation") can outgrow the row; the pill then wraps its text
+         to a second line instead of clipping off the 360px screen. At
+         normal sizes no chip reaches its container's width, so this
+         changes nothing. */
+    @apply inline-flex w-auto max-w-full shrink-0 items-center rounded-full px-3 py-1 text-small font-medium;
   }
   .chip-lunas {
     @apply bg-success-soft text-success;
