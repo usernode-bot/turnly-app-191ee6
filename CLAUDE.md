@@ -60,25 +60,12 @@ the platform fixes the base commit, and none of this applies.
 
 ## Starter template
 
-The screen this app currently ships — the hero, the "What's already
-working" card, and the Press! example (the demo markup in
-`public/index.html`, the `/api/press` and `/api/leaderboard` routes, and
-the `presses` table bootstrap in `server.js`) — is placeholder content
-from the Homeroom starter template, not product intent.
-
-When the user asks for their first real feature, REPLACE the template
-screen rather than building alongside it:
-
-- remove the `usernode-starter-notice@1` block in `public/index.html`
-  (both sentinel comments and everything between them),
-- remove or repurpose the "Try the example" card, its demo endpoints and
-  the `presses` table as appropriate,
-- rewrite `README.md` to describe the actual app.
-
-Keep the `usernode-dev-console@1` forwarder `<script>` when rewriting the
-HTML — that block is platform infrastructure, not template content. So is
-the bridge `<script>`. The design kit is not placeholder either: build the
-real app with it, and fill in "## Design" below.
+The Homeroom starter screen (the "Starter template" card, the Press!
+example, the `/api/press` and `/api/leaderboard` routes and the `presses`
+table) was removed in Tahap 1 (Fondasi) and replaced by the app's real
+design system — see "## Design" below. The foundation preview screen in
+`public/index.html` is temporary: Tahap 2 replaces it with the real
+Beranda and Detail arisan, reusing the components and demo data.
 
 The screen has a light and a dark look and follows the viewer's Homeroom
 theme, switching live when they change it: the theme `<script>` right after
@@ -100,35 +87,50 @@ tables you've marked private), etc.
 
 ## About Turnly App
 
-Simplifies managing arisan groups and rotating savings contributions
-
-_(add a sentence or two more of product context here so Claude Code has a
-shared understanding of what this app is for)_
+Simplifies managing arisan groups and rotating savings contributions.
+Arisan is usually run through WhatsApp chats; Turnly gives the group one
+screen that answers "siapa sudah bayar, giliran siapa, dan apa yang harus
+saya lakukan sekarang" — big text, big buttons, everyday Indonesian, for
+members aged 25 to 65, many not tech-savvy.
 
 ## Design
 
 This app's look. The first real version fills in the blanks; every later
 change follows it, and updates it when a request changes the look on purpose.
 
-- **Palette:** _(name the accent, any second colour and the neutrals, e.g.
-  "accent: tomato red; second: basil green; neutrals: warm greys")_
-- **Signature element:** _(the one thing on screen drawn from this app's
-  subject, which no other app would have)_
-- **Type scale:** `text-title`, `text-heading`, `text-body`, `text-small`
-  _(change their sizes in `tailwind.config.js` if you must, not their number)_
-- **One fixed look:** _(only for an app drawn as its own scene, such as a
-  game: which look, and why. Otherwise delete this line.)_
+- **Palette:** accent turmeric yellow (light `#F0A202`, dark `#F6B93B`) with
+  indigo-ink text `#222B5A` on it; status green `#1B7F52`/`#55C890` (lunas),
+  yellow-brown `#9A6200` (menunggu), red `#C0352B`/`#FF8279` (telat);
+  neutrals lavender-grey `#F5F4F9` ground / navy `#141834` ground. Exact
+  values live as `R G B` tokens in `styles/tailwind-input.css`.
+- **Signature element:** the lingkaran giliran (turn circle, Tahap 2) —
+  the status avatar circles built in Tahap 1 are its building blocks.
+- **Type scale:** `text-small` 13px, `text-body` 15px, `text-heading` 19px,
+  `text-title` 36px (big nominal amounts, in `font-display`). Bricolage
+  Grotesque for display, Figtree for body, system sans fallback.
 
 The kit is in `styles/tailwind-input.css`: colour tokens with a light and
-a dark value (named in `tailwind.config.js`), and a few components
-(`btn-primary`, `btn-secondary`, `field`, `list` and `list-row`,
-`card`, `section-label`, `skeleton`, `state-empty`, `state-error`).
+a dark value (named in `tailwind.config.js`), and the components
+(`btn-primary`, `btn-secondary`, `field`, `list` and `list-row`, `card`,
+`chip` + status variants, `avatar` + status variants, `tag`, `hero`,
+`section-label`, `skeleton`, `state-empty`, `state-error`). Buttons:
+primary corners 14px / 48px tall, secondary and fields 10px / 44px. Status
+chips are fully rounded and ALWAYS carry the status word; the four avatar
+states differ by fill/border treatment, never colour alone (filled green /
+dashed ochre outline / solid grey-blue outline / pink fill with red
+outline). Lists are rows separated by thin lines, not stacks of cards. The
+hero payment block has three large corners and one small one
+(`24px 24px 24px 6px`).
 Re-theme by changing the token values there, keeping every text pair at
-4.5:1 or more in both looks.
+4.5:1 or more in both looks. Bottom sheet and toast come from the
+platform's `usernode-native` kit, themed via the `--un-*` overrides in the
+same file — never hand-rolled.
 
 - Colour comes only from the tokens (`bg-ground`, `bg-surface`,
   `text-fg`, `text-muted`, `border-line`, `bg-accent` with
   `text-on-accent`, ...): never a raw hex value or a stock palette class.
+  The accent is a fill colour only — never `text-accent` on a light
+  surface (the yellow fails contrast as text there).
 - Tap targets are at least 44 px; the buttons and fields already are.
 - Every screen that loads data has honest loading, empty and error states.
   Never show the empty state while loading or after a failure; an error says
@@ -139,6 +141,21 @@ Re-theme by changing the token values there, keeping every text pair at
 
 ## App-specific conventions
 
-_(optional — e.g. "all currency values stored as integer cents, not
-floats"; "the `posts` table is append-only"; "avoid adding new
-dependencies"; etc.)_
+- Money is always an integer number of rupiah (`formatRupiah` in
+  `public/js/domain.js`), never a float, never decimals; display groups
+  with Indonesian separators: `Rp500.000`.
+- "Telat" is never stored; it is derived from the periode's due date at
+  render time. All schedule arithmetic is calendar-date based in
+  Asia/Jakarta (UTC+7, no DST) — parse `YYYY-MM-DD` as UTC
+  (`parseHari`/`selisihHari` in `public/js/domain.js`).
+- All UI text goes through `public/js/i18n.js` (`t(key, params)`); no
+  hardcoded copy in markup. Indonesian for now, structured for more
+  languages later.
+- Demo data lives in `public/js/demo-data.js` and is anchored to
+  `DEMO_HARI_INI = '2026-10-05'` so relative labels ("2 hari lagi",
+  "Telat 3 hari") render the same on any day. Screens pass that anchor,
+  not today's date, when rendering demo rows. Names and rekening numbers
+  in demo data are obviously fake; never clone real users into it.
+- Domain JS shapes mirror the planned database tables field for field
+  (`arisan`, `anggota_arisan`, `periode`, `iuran`), so the backend stage
+  slots in without renaming.

@@ -137,34 +137,6 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 // fresh load.
 app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
-// Button press
-app.post('/api/press', async (req, res) => {
-  try {
-    await pool.query(`
-      INSERT INTO presses (user_id, username) VALUES ($1, $2)
-    `, [req.user.id, req.user.username]);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Leaderboard
-app.get('/api/leaderboard', async (_req, res) => {
-  try {
-    const { rows } = await pool.query(`
-      SELECT username, COUNT(*) as presses
-      FROM presses
-      GROUP BY username
-      ORDER BY presses DESC
-      LIMIT 50
-    `);
-    res.json({ leaderboard: rows });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 // HTML shell: serve the app if authenticated. Unauthenticated top-level
@@ -202,18 +174,21 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-async function start() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS presses (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL,
-      username VARCHAR(255) NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
-  const server = app.listen(port, () => console.log(`Listening on :${port}`));
-  // Let Envoy retire idle upstream connections at 60s, with a 15s margin.
-  server.keepAliveTimeout = 75_000;
-}
+const server = app.listen(port, () => console.log(`Listening on :${port}`));
+// Let Envoy retire idle upstream connections at 60s, with a 15s margin.
+server.keepAliveTimeout = 75_000;
 
-start().catch(err => { console.error(err); process.exit(1); });
+// Graceful shutdown: stop accepting connections, drain briefly, close the
+// pool, exit. The platform stops the container with SIGTERM on redeploy.
+let shuttingDown = false;
+function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`${signal} received, shutting down`);
+  server.close(() => {
+    pool.end().finally(() => process.exit(0));
+  });
+  setTimeout(() => process.exit(0), 3000).unref();
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
