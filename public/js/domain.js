@@ -89,6 +89,28 @@
     }).format(kini || new Date()));
   }
 
+  // Today in Asia/Jakarta as a YYYY-MM-DD calendar date — the moving
+  // stand-in for the demo data's anchor day (demo-data.js). Built from
+  // formatToParts so the order a locale prints the parts in cannot matter.
+  function tanggalJakarta(kini) {
+    var parts = new Intl.DateTimeFormat('en', {
+      timeZone: 'Asia/Jakarta',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(kini || new Date());
+    var nilai = {};
+    parts.forEach(function (p) { nilai[p.type] = p.value; });
+    return nilai.year + '-' + nilai.month + '-' + nilai.day;
+  }
+
+  // A whole number of days from a YYYY-MM-DD calendar date. UTC-midnight day
+  // arithmetic is exact here (no daylight saving): '2026-10-05', -3 ->
+  // '2026-10-02'.
+  function tanggalPlus(iso, days) {
+    return new Date(parseHari(iso) + days * 86400000).toISOString().slice(0, 10);
+  }
+
   // Resolve how a member's iuran should be PRESENTED this periode:
   // { key: 'lunas'|'menunggu'|'belum'|'telat', telatHari }. A 'belum'
   // iuran past its due date presents as 'telat'. 'ditolak' returns to
@@ -148,6 +170,8 @@
     hitungTelatHari: hitungTelatHari,
     bandSapa: bandSapa,
     jamJakarta: jamJakarta,
+    tanggalJakarta: tanggalJakarta,
+    tanggalPlus: tanggalPlus,
     formatRupiah: formatRupiah,
     formatTanggalPendek: formatTanggalPendek,
     statusIuranTampil: statusIuranTampil,

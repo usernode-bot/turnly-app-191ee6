@@ -321,7 +321,11 @@
   var tampilan = null; // { nama: 'beranda' } or { nama: 'detail', arisan }
 
   function route() {
-    var m = /^\/arisan\/([A-Za-z0-9-]+)\/?$/.exec(window.location.pathname);
+    // Detail arisan via the real path, or via the hash — the hash form is
+    // how the Quick revision workshop frames the screen on one static page
+    // (/index.html#/arisan/<id>). An unknown id falls through to Beranda.
+    var m = /^\/arisan\/([A-Za-z0-9-]+)\/?$/.exec(window.location.pathname)
+      || /^#\/arisan\/([A-Za-z0-9-]+)/.exec(window.location.hash || '');
     var arisan = m && demo.arisan.filter(function (a) { return a.id === m[1]; })[0];
     tampilan = arisan ? { nama: 'detail', arisan: arisan } : { nama: 'beranda' };
     rerender();

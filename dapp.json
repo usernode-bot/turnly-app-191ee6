@@ -46,6 +46,34 @@
       "name": "Language picker present",
       "path": "/",
       "expectSelector": "#language-select"
+    },
+    {
+      "id": "revisi.workshop",
+      "name": "Quick revision workshop renders with preview, checklist and history",
+      "path": "/revisi.html",
+      "expectText": "Preview",
+      "expectSelector": "#revisi-checklist",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "styles/**",
+        "tailwind.config.js"
+      ]
+    },
+    {
+      "name": "Workshop renders in Indonesian",
+      "path": "/revisi.html?lang=id",
+      "expectText": "Pratinjau"
+    },
+    {
+      "name": "Revision tools link under the Beranda demo note",
+      "path": "/",
+      "expectSelector": "#link-revisi"
+    },
+    {
+      "name": "Detail arisan via the hash route (workshop preview)",
+      "path": "/index.html#/arisan/demo-kb",
+      "expectSelector": "#lingkaran-giliran"
     }
   ]
 }

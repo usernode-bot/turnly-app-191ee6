@@ -92,6 +92,7 @@
     document.getElementById('groups-explainer').textContent = t('groups.explainer');
     document.getElementById('btn-arisan-baru').textContent = t('home.newArisan');
     document.getElementById('demo-catatan').textContent = t('demo.note');
+    document.getElementById('link-revisi').textContent = t('revisi.open');
     var ul = document.getElementById('daftar-arisan');
     ul.textContent = '';
 
