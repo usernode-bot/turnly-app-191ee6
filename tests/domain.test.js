@@ -38,3 +38,26 @@ test('the greeting band follows the Jakarta day-part conventions', () => {
   assert.equal(d.bandSapa(0), 'malam');
   assert.equal(d.bandSapa(3), 'malam');
 });
+
+test('tanggalJakarta is the Jakarta calendar day as YYYY-MM-DD', () => {
+  // 2026-10-10 01:30 UTC is already 08:30 on the 10th in Jakarta.
+  assert.equal(d.tanggalJakarta(new Date('2026-10-10T01:30:00Z')), '2026-10-10');
+  // 2026-10-10 17:00 UTC is 01:00 on the NEXT day in Jakarta (UTC+7).
+  assert.equal(d.tanggalJakarta(new Date('2026-10-10T17:00:00Z')), '2026-10-11');
+  // The shape is always the parseable ISO day the demo generator needs.
+  const hariIni = d.tanggalJakarta();
+  assert.match(hariIni, /^\d{4}-\d{2}-\d{2}$/);
+  assert.doesNotThrow(() => d.parseHari(hariIni));
+});
+
+test('tanggalPlus offsets whole days across month and year boundaries', () => {
+  assert.equal(d.tanggalPlus('2026-10-05', 2), '2026-10-07');
+  assert.equal(d.tanggalPlus('2026-10-05', -3), '2026-10-02');
+  assert.equal(d.tanggalPlus('2026-10-05', -88), '2026-07-09');
+  assert.equal(d.tanggalPlus('2026-01-01', -1), '2025-12-31');
+  assert.equal(d.tanggalPlus('2026-03-01', -1), '2026-02-28');
+  assert.equal(d.tanggalPlus('2024-03-01', -1), '2024-02-29'); // leap day
+  assert.equal(d.tanggalPlus('2026-02-28', 1), '2026-03-01');
+  assert.equal(d.tanggalPlus('2026-10-05', 0), '2026-10-05');
+  assert.throws(() => d.tanggalPlus('7/10/2026', 1));
+});

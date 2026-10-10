@@ -176,13 +176,22 @@ same file — never hand-rolled.
   Paid; Menunggu konfirmasi = Awaiting confirmation; Belum bayar = Unpaid;
   Telat N hari = Late N days; tabs Status / Turns / History; Ingatkan /
   Konfirmasi / Tolak = Remind / Confirm / Reject; the "Anda" tag = You.
-  Sentence case, plain friendly English, no exclamation marks. Honorifics in
+  Quick revision workshop (the owner's tool at `public/revisi.html`, linked
+  under the Home demo note): revision = revision; poin revisi = point;
+  pratinjau = preview; checklist = checklist; riwayat versi = version
+  history; urungkan = undo; pulihkan = restore; terbuka/selesai =
+  open/done. Sentence case, plain friendly English, no exclamation marks.
+  Honorifics in
   member names (Bu, Pak, Mas, Mba) and user-written arisan names are data,
   never translated.
-- Demo data lives in `public/js/demo-data.js` and is anchored to
-  `DEMO_HARI_INI = '2026-10-05'` so relative labels ("in 2 days" /
-  "2 hari lagi", "Late 3 days" / "Telat 3 hari") render the same on any day. Screens pass that anchor,
-  not today's date, when rendering demo rows. Names and rekening numbers
+- Demo data lives in `public/js/demo-data.js` and is GENERATED against the
+  anchor day: `build(hariIni)` offsets every date from the anchor — today
+  in Asia/Jakarta by default, pinned for one page load with
+  `?anchor=YYYY-MM-DD` — so relative labels ("in 2 days" / "2 hari lagi",
+  "Late 3 days" / "Telat 3 hari") tell the same story on any day with
+  fresh dates. Screens pass that anchor (`DEMO_HARI_INI`), not a hardcoded
+  date, when rendering demo rows; tests pin the story via
+  `build('2026-10-05')`. Names and rekening numbers
   in demo data are obviously fake; never clone real users into it.
 - Domain JS shapes mirror the planned database tables field for field
   (`arisan`, `anggota_arisan`, `periode`, `iuran`), so the backend stage

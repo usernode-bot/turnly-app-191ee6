@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <!-- The same head the app shell carries (usernode-dev-console, self-hosted
+       fonts, the Tailwind build, the bridge and the native UI kit, the theme
+       script) — all by RELATIVE path, never a hostname. The Quick revision
+       workshop is part of this app, not a separate bundle. -->
+  <script>
+  // usernode-dev-console@1
+  (function () {
+    if (window.__usernodeDevConsole) return;
+    window.__usernodeDevConsole = true;
+    var S = '__usernodeDevConsole';
+    function serialize(v, depth) {
+      depth = depth || 0;
+      try {
+        if (v === undefined) return 'undefined';
+        if (v === null) return 'null';
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+        if (typeof v === 'function') return '[Function ' + (v.name || 'anonymous') + ']';
+        if (v instanceof Error) return v.stack || (v.name || v.message || 'Error');
+        if (depth > 3) return '[…]';
+        var seen = new WeakSet();
+        return JSON.stringify(v, function (k, val) {
+          if (typeof val === 'object' && val !== null) {
+            if (seen.has(val)) return '[Circular]';
+            seen.add(val);
+          }
+          if (typeof val === 'function') return '[Function ' + (val.name || 'anonymous') + ']';
+          if (val instanceof Error) return val.stack || (val.name + ': ' + v.message);
+          return val;
+        });
+      } catch (e) { try { return String(v); } catch (_) { return '[unserializable]'; } }
+    }
+    function post(level, args, meta) {
+      try {
+        var payload = {
+          sentinel: S,
+          level: level,
+          args: Array.prototype.slice.call(args).map(function (a) { return serialize(a); }),
+          ts: Date.now(),
+          url: location.href,
+        };
+        if (meta) for (var k in meta) payload[k] = meta[k];
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(payload, '*');
+        }
+      } catch (_) {}
+    }
+    ['log','info','warn','error','debug'].forEach(function (level) {
+      var orig = console[level] ? console[level].bind(console) : function () {};
+      console[level] = function () { post(level, arguments); orig.apply(null, arguments); };
+    });
+    window.addEventListener('error', function (e) {
+      var msg = (e.error && (e.error.stack || e.error.message)) || e.message || 'Error';
+      post('error', [msg], { source: e.filename || '', line: e.lineno || 0, col: e.colno || 0, kind: 'error' });
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason;
+      var msg = (r && (r.stack || r.message)) || String(r);
+      post('error', [msg], { kind: 'unhandledrejection' });
+    });
+    try { post('info', ['[dev-console ready]'], { kind: 'ready' }); } catch (_) {}
+  })();
+  </script>
+  <title>Turnly</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23222B5A'/><circle cx='50' cy='50' r='30' fill='none' stroke='%23F0A202' stroke-width='9' stroke-dasharray='28 14'/></svg>">
+  <link rel="stylesheet" href="/tailwind.css">
+  <script src="/usernode-bridge/v1/bridge.js"></script>
+  <link rel="stylesheet" href="/usernode-native/v1/native.css">
+  <script src="/usernode-native/v1/native.js"></script>
+  <!-- Follow the viewer's Homeroom theme (the bridge reports it), with the
+       OS preference as the fallback outside Homeroom. -->
+  <script>
+    (function () {
+      var media = window.matchMedia('(prefers-color-scheme: dark)');
+      function applyTheme() {
+        var theme = (window.usernode && window.usernode.theme) || (media.matches ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.style.colorScheme = theme;
+      }
+      applyTheme();
+      window.addEventListener('usernode:theme-changed', applyTheme);
+      media.addEventListener('change', applyTheme);
+    })();
+  </script>
+</head>
+<body class="min-h-screen bg-ground text-fg">
+  <main>
+    <!-- ── Quick revision workshop ───────────────────────────────────────
+         The owner's tool: preview the app's screens at real phone and
+         tablet widths, queue fixes as checklist points, send them point
+         by point, and undo checklist mistakes. Members never see this
+         page except through the quiet link under Home's demo note. Every
+         string is filled by public/js/revisi.js from i18n.js — no
+         hardcoded copy here, same rule as index.html. -->
+    <header class="app-header">
+      <div class="mx-auto flex max-w-5xl items-center gap-2 px-4">
+        <button id="btn-kembali" class="btn-secondary shrink-0 px-3">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <h1 id="revisi-judul" class="min-w-0 flex-1 truncate font-display text-heading"></h1>
+      </div>
+    </header>
+
+    <div class="mx-auto flex max-w-5xl flex-col gap-8 px-4 pb-10 pt-4">
+      <!-- ── Preview: the app's screens at true size ───────────────────── -->
+      <section id="bagian-pratinjau" class="flex flex-col gap-3">
+        <h2 id="pratinjau-label" class="section-label"></h2>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="pratinjau-home" class="btn-secondary" aria-pressed="false"></button>
+          <button id="pratinjau-detail" class="btn-secondary" aria-pressed="false"></button>
+          <button id="pratinjau-muat" class="btn-secondary ml-auto"></button>
+        </div>
+        <div id="strip-pratinjau" class="flex gap-5 overflow-x-auto pb-2"></div>
+      </section>
+
+      <!-- ── Checklist: one point per revision instruction ─────────────── -->
+      <section id="revisi-checklist" class="flex flex-col gap-2">
+        <h2 id="checklist-label" class="section-label"></h2>
+        <div class="flex gap-2">
+          <input id="input-poin" type="text" maxlength="300" class="field min-w-0 flex-1" autocomplete="off">
+          <button id="btn-tambah" class="btn-secondary shrink-0"></button>
+        </div>
+        <ul id="daftar-poin" class="list"></ul>
+        <div id="poin-kosong" class="state-empty" hidden>
+          <p id="poin-kosong-teks" class="text-small text-muted"></p>
+        </div>
+        <button id="btn-salin" class="btn-primary mt-1 w-full"></button>
+      </section>
+
+      <!-- ── Version history: every checklist change, undoable ─────────── -->
+      <section id="revisi-versi" class="flex flex-col gap-2">
+        <h2 id="versi-label" class="section-label"></h2>
+        <button id="btn-urungkan" class="btn-secondary w-full"></button>
+        <ul id="daftar-versi" class="list"></ul>
+        <div id="versi-kosong" class="state-empty" hidden>
+          <p id="versi-kosong-teks" class="text-small text-muted"></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/messages/en.js"></script>
+  <script src="/js/messages/id.js"></script>
+  <script src="/js/user-profile.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/domain.js"></script>
+  <script src="/js/revisi-store.js"></script>
+  <script src="/js/revisi.js"></script>
+</body>
+</html>

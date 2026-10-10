@@ -114,5 +114,43 @@
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Follow system',
+
+    // Quick revision workshop (revisi.html): the owner's tool for previewing
+    // the app at real screen widths and queueing point-by-point revisions.
+    'revisi.open': 'Revision tools',
+    'revisi.title': 'Quick revision',
+    'revisi.back': 'Back to the app',
+    'revisi.checklist': 'Checklist',
+    'revisi.pointPlaceholder': 'Add a revision point',
+    'revisi.add': 'Add',
+    'revisi.pointOpen': 'Open',
+    'revisi.pointDone': 'Done',
+    'revisi.delete': 'Delete',
+    'revisi.copyOpen': 'Copy open points',
+    'revisi.copyIntro': 'Please fix only these points. Change nothing else:',
+    'revisi.copied': 'Open points copied. Paste them as your revision request.',
+    'revisi.empty': 'No points yet. Add the small fixes you spot while previewing.',
+
+    'preview.title': 'Preview',
+    'preview.home': 'Home',
+    'preview.group': 'Group detail',
+    'preview.reload': 'Reload',
+    'preview.size': '{width} px wide',
+    'preview.notClipped': 'No clipped text',
+    'preview.clipped': '{count, plural, one{1 clipped line} other{# clipped lines}}',
+    'preview.scanError': 'The preview could not load. The checklist still works.',
+    'preview.retry': 'Retry',
+
+    'versions.title': 'Version history',
+    'versions.undo': 'Undo',
+    'versions.restore': 'Restore',
+    'versions.empty': 'Changes you make appear here.',
+    'versions.action.added': 'Point added',
+    'versions.action.edited': 'Point edited',
+    'versions.action.deleted': 'Point deleted',
+    'versions.action.markedDone': 'Point marked done',
+    'versions.action.reopened': 'Point reopened',
+    'versions.action.restored': 'Restored an earlier version',
+    'versions.entry': '{action} · {open, plural, one{1 point open} other{# points open}} · {time}',
   };
 });

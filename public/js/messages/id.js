@@ -102,5 +102,43 @@
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Ikuti sistem',
+
+    // Bengkel revisi cepat (revisi.html): peralatan pemilik app untuk
+    // melihat app di lebar layar sungguhan dan menyiapkan revisi per poin.
+    'revisi.open': 'Peralatan revisi',
+    'revisi.title': 'Revisi cepat',
+    'revisi.back': 'Kembali ke aplikasi',
+    'revisi.checklist': 'Daftar perubahan',
+    'revisi.pointPlaceholder': 'Tambah poin revisi',
+    'revisi.add': 'Tambah',
+    'revisi.pointOpen': 'Terbuka',
+    'revisi.pointDone': 'Selesai',
+    'revisi.delete': 'Hapus',
+    'revisi.copyOpen': 'Salin poin terbuka',
+    'revisi.copyIntro': 'Tolong perbaiki hanya poin-poin ini. Jangan ubah bagian lain:',
+    'revisi.copied': 'Poin terbuka disalin. Tempel sebagai permintaan revisi Anda.',
+    'revisi.empty': 'Belum ada poin. Tambahkan perbaikan kecil yang Anda temukan saat pratinjau.',
+
+    'preview.title': 'Pratinjau',
+    'preview.home': 'Beranda',
+    'preview.group': 'Detail arisan',
+    'preview.reload': 'Muat ulang',
+    'preview.size': 'lebar {width} px',
+    'preview.notClipped': 'Tidak ada teks terpotong',
+    'preview.clipped': '{count, plural, other{# baris terpotong}}',
+    'preview.scanError': 'Pratinjau tidak bisa dimuat. Daftar perubahan tetap berfungsi.',
+    'preview.retry': 'Coba lagi',
+
+    'versions.title': 'Riwayat versi',
+    'versions.undo': 'Urungkan',
+    'versions.restore': 'Pulihkan',
+    'versions.empty': 'Perubahan yang Anda buat muncul di sini.',
+    'versions.action.added': 'Poin ditambahkan',
+    'versions.action.edited': 'Poin diubah',
+    'versions.action.deleted': 'Poin dihapus',
+    'versions.action.markedDone': 'Poin ditandai selesai',
+    'versions.action.reopened': 'Poin dibuka kembali',
+    'versions.action.restored': 'Memulihkan versi sebelumnya',
+    'versions.entry': '{action} · {open, plural, other{# poin terbuka}} · {time}',
   };
 });
