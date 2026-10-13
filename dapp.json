@@ -75,5 +75,9 @@
       "path": "/index.html#/arisan/demo-kb",
       "expectSelector": "#lingkaran-giliran"
     }
-  ]
+  ],
+  "icon": {
+    "image": "brand/icon.png",
+    "emoji": "🔄"
+  }
 }
