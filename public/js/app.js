@@ -76,7 +76,7 @@
   // where the Status tab says it in words).
   function avatarEl(nama, status, opts) {
     var elAva = el('span', 'avatar ' + AVATAR_CLASS[status.key] + (opts && opts.mini ? ' avatar-sm' : ''));
-    elAva.textContent = initials(nama);
+    elAva.textContent = opts && opts.text !== undefined ? opts.text : initials(nama);
     if (opts && (opts.mini || opts.silent)) {
       elAva.setAttribute('aria-hidden', 'true'); // the row's chip already says the status
     } else {

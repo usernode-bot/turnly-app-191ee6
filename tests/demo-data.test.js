@@ -64,6 +64,36 @@ test('the story is the same on a moving anchor (leap days included)', () => {
   }
 });
 
+test('the Home turn line and recipient follow from the viewer\'s urutan_giliran', () => {
+  const data = demo.build(ANCHOR);
+  const [kb, k3] = data.arisan;
+
+  const milik = (arisan) => arisan.anggota.filter((a) => a.user_id === demo.PENGGUNA_DEMO_ID)[0];
+  const giliranKb = d.giliranPengguna(kb, milik(kb));
+  assert.equal(giliranKb.nomor, 5);
+  assert.equal(giliranKb.keadaan, 'nanti');
+  assert.equal(giliranKb.tanggal, '2026-11-06');
+  assert.equal(d.penerimaPeriode(kb).nama_tampil, 'Bu Sari');
+
+  const giliranK3 = d.giliranPengguna(k3, milik(k3));
+  assert.equal(giliranK3.nomor, 3);
+  assert.equal(giliranK3.keadaan, 'nanti');
+  assert.equal(giliranK3.tanggal, '2026-10-09');
+  assert.equal(d.penerimaPeriode(k3).nama_tampil, 'Mba Tika');
+});
+
+test('the turn stays 32 (KB) and 4 (K3) days out on every anchor', () => {
+  for (const anchor of [ANCHOR, '2026-01-01', '2024-02-29']) {
+    const data = demo.build(anchor);
+    for (const arisan of data.arisan) {
+      const milik = arisan.anggota.filter((a) => a.user_id === demo.PENGGUNA_DEMO_ID)[0];
+      const giliran = d.giliranPengguna(arisan, milik);
+      const jarak = arisan.id === 'demo-kb' ? 32 : 4;
+      assert.equal(d.selisihHari(anchor, giliran.tanggal), jarak, arisan.nama);
+    }
+  }
+});
+
 function struktural(data) {
   for (const arisan of data.arisan) {
     assert.ok(Array.isArray(arisan.periode_lalu), arisan.nama + ' has no periode_lalu');

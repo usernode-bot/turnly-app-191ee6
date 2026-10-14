@@ -103,7 +103,10 @@
       a.href = '/arisan/' + arisan.id;
 
       var kiri = app.el('div', 'flex min-w-0 items-center gap-3');
-      kiri.appendChild(app.avatarEl(milik.anggota.nama_tampil, milik.status, { mini: true }));
+      kiri.appendChild(app.avatarEl(milik.anggota.nama_tampil, milik.status, {
+        text: d.inisialGrup(arisan.nama),
+        silent: true,
+      }));
       var teks = app.el('div', 'min-w-0');
       teks.appendChild(app.el('p', 'truncate text-body font-medium', arisan.nama));
       teks.appendChild(app.el('p', 'truncate text-small text-muted', t('groups.summary', {
@@ -112,6 +115,32 @@
         round: arisan.periode_aktif.nomor,
         rounds: arisan.total_periode,
       })));
+
+      // When this member receives the pot, then who receives it this round
+      // (hidden when that is the member themselves).
+      var giliran = d.giliranPengguna(arisan, milik.anggota);
+      if (giliran) {
+        if (giliran.keadaan === 'nanti') {
+          var when = arisan.periode === 'mingguan'
+            ? d.formatTanggalPendek(giliran.tanggal, i18n.getLocale())
+            : d.formatBulanTahun(giliran.tanggal, i18n.getLocale());
+          teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurn', {
+            round: giliran.nomor,
+            when: when,
+          })));
+        } else if (giliran.keadaan === 'sekarang') {
+          teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnNow')));
+        } else {
+          teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnPassed', {
+            round: giliran.nomor,
+          })));
+        }
+        var penerima = d.penerimaPeriode(arisan);
+        if (penerima && penerima.id !== milik.anggota.id) {
+          teks.appendChild(app.el('p', 'text-small text-muted',
+            t('groups.recipientNow', { name: penerima.nama_tampil })));
+        }
+      }
       kiri.appendChild(teks);
 
       a.appendChild(kiri);
