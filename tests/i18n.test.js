@@ -14,10 +14,13 @@ test('English plurals at 0, 1 and many', () => {
   assert.equal(i18n.t('status.late', { days: 0 }), 'Late 0 days');
   assert.equal(i18n.t('status.late', { days: 1 }), 'Late 1 day');
   assert.equal(i18n.t('status.late', { days: 3 }), 'Late 3 days');
-  assert.equal(i18n.t('home.dueIn', { date: 'Oct 7', days: 1 }), 'Due Oct 7, in 1 day');
-  assert.equal(i18n.t('home.dueIn', { date: 'Oct 7', days: 2 }), 'Due Oct 7, in 2 days');
+  assert.equal(i18n.t('home.dueOn', { date: 'Oct 7' }), 'Due Oct 7');
+  assert.equal(i18n.t('home.daysLeft', { days: 1 }), 'In 1 day');
+  assert.equal(i18n.t('home.daysLeft', { days: 2 }), 'In 2 days');
   assert.equal(i18n.t('home.pastDue', { days: 1 }), '1 day past due');
   assert.equal(i18n.t('home.pastDue', { days: 3 }), '3 days past due');
+  assert.equal(i18n.t('groups.summary', { paid: 7, total: 10, round: 4, rounds: 10 }),
+    '7 of 10 members paid · Round 4 of 10');
 });
 
 test('Indonesian plurals at 0, 1 and many (no plural forms)', () => {
@@ -25,7 +28,10 @@ test('Indonesian plurals at 0, 1 and many (no plural forms)', () => {
   assert.equal(i18n.t('status.late', { days: 0 }), 'Telat 0 hari');
   assert.equal(i18n.t('status.late', { days: 1 }), 'Telat 1 hari');
   assert.equal(i18n.t('status.late', { days: 3 }), 'Telat 3 hari');
-  assert.equal(i18n.t('home.dueIn', { date: '7 Okt', days: 2 }), 'Jatuh tempo 7 Okt, 2 hari lagi');
+  assert.equal(i18n.t('home.dueOn', { date: '7 Okt' }), 'Jatuh tempo 7 Okt');
+  assert.equal(i18n.t('home.daysLeft', { days: 2 }), '2 hari lagi');
+  assert.equal(i18n.t('groups.summary', { paid: 7, total: 10, round: 4, rounds: 10 }),
+    '7 dari 10 anggota sudah bayar · Periode 4 dari 10');
   i18n.setChoice('en');
 });
 

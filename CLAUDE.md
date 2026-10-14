@@ -100,9 +100,13 @@ change follows it, and updates it when a request changes the look on purpose.
 
 - **Palette:** accent turmeric yellow (light `#F0A202`, dark `#F6B93B`) with
   indigo-ink text `#222B5A` on it; status green `#1B7F52`/`#55C890` (lunas),
-  yellow-brown `#9A6200` (menunggu), red `#C0352B`/`#FF8279` (telat);
+  yellow-brown `#9A6200` (menunggu), orange `#A84800`/`#FFA657` (belum
+  bayar), red `#C0352B`/`#FF8279` (telat);
   neutrals lavender-grey `#F5F4F9` ground / navy `#141834` ground. Exact
-  values live as `R G B` tokens in `styles/tailwind-input.css`.
+  values live as `R G B` tokens in `styles/tailwind-input.css`. The accent
+  is a fill colour everywhere except the hero block's due-days line
+  (`#hero-sisa-hari`), the one place the yellow is used as text, on the
+  navy hero in both looks.
 - **Signature element:** the lingkaran giliran (turn circle, Tahap 2) —
   the status avatar circles built in Tahap 1 are its building blocks.
 - **Type scale:** `text-small` 13px, `text-body` 15px, `text-heading` 19px,
