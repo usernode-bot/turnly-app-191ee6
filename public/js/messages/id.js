@@ -56,11 +56,31 @@
     'action.reject': 'Tolak',
     'action.remind': 'Ingatkan',
 
+    // Ingatkan: tombol per baris dan jeda kirimnya, aksi massal di bilah
+    // bawah, lembar konfirmasi dan baris Pengingat di Riwayat.
+    'reminder.bulk': 'Ingatkan {count} anggota',
+    'reminder.again': 'Ingatkan lagi',
+    'reminder.cooldown': '{name} sudah diingatkan hari ini. Coba lagi besok.',
+    'reminder.sentLine': 'Diingatkan {time}',
+    'reminder.sentToast': 'Pengingat {name} tercatat',
+    'reminder.bulkToast': '{count} pengingat tercatat',
+    'reminder.confirmTitle': 'Ingatkan {count} anggota',
+    'reminder.confirmBody': 'Aplikasi mencatat satu pengingat untuk tiap anggota di bawah. Tidak ada pesan otomatis yang dikirim.',
+    'reminder.confirmSend': 'Catat pengingat',
+    'reminder.confirmCancel': 'Batal',
+    'reminder.done': 'Selesai',
+    'reminder.sheetTitle': 'Pengingat tercatat',
+    'reminder.sheetBody': '{count} pengingat tercatat untuk anggota yang belum bayar.',
+    'reminder.historyTitle': 'Pengingat',
+    'reminder.historyEmpty': 'Belum ada pengingat tercatat.',
+    'reminder.ago.now': 'baru saja',
+    'reminder.ago.minutes': '{count} menit lalu',
+    'reminder.ago.hours': '{count} jam lalu',
+    'reminder.ago.days': '{count} hari lalu',
+
     'reject.title': 'Tolak bukti dari {name}',
     'reject.reasonLabel': 'Alasan (opsional)',
     'reject.reasonPlaceholder': 'Contoh: nominal tidak sesuai',
-
-    'bar.remindUnpaid': 'Ingatkan {count} anggota',
 
     'status.paid': 'Lunas',
     'status.awaiting': 'Menunggu konfirmasi',
@@ -94,14 +114,15 @@
     'toast.accountCopied': 'Nomor rekening disalin',
     'toast.confirmed': 'Iuran {name} dikonfirmasi lunas',
     'toast.rejected': 'Bukti ditolak. {name} bisa kirim ulang.',
-    'toast.reminderSent': 'Pengingat terkirim ke {name}',
-    'toast.remindersSent': 'Pengingat terkirim ke {count} anggota',
     'demo.note': 'Tampilan berisi data contoh untuk mode demo.',
 
     'language.title': 'Bahasa',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Ikuti sistem',
+    'language.savedAccount': 'Tersimpan di akun Anda',
+    'language.savedDevice': 'Tersimpan di perangkat ini saja',
+    'language.savedPending': 'Tersimpan di perangkat ini dulu. Pindah ke akun Anda saat online.',
 
     // Bengkel revisi cepat (revisi.html): peralatan pemilik app untuk
     // melihat app di lebar layar sungguhan dan menyiapkan revisi per poin.

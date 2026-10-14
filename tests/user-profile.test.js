@@ -60,3 +60,37 @@ test('a corrupt profile object reads as empty', () => {
   assert.deepEqual(profile.read(), {});
   assert.equal(profile.getLanguage(), null);
 });
+
+test('"follow system" resolves to the language the account stores', () => {
+  const profile = fresh(memoryStorage());
+  // The device language decides, and Indonesian wins when it starts with id.
+  assert.equal(profile.resolveFollowSystem(null, ['id-ID']), 'id');
+  assert.equal(profile.resolveFollowSystem(null, ['in']), 'id');
+  assert.equal(profile.resolveFollowSystem(null, ['en-US']), 'en');
+  // The Homeroom platform locale outranks the device language.
+  assert.equal(profile.resolveFollowSystem('id', ['en-US']), 'id');
+  assert.equal(profile.resolveFollowSystem('pt-BR', ['en-US']), 'en');
+  // Nothing recognisable falls back to English (the account column has no
+  // "follow system" and is NOT NULL, so a value must be chosen).
+  assert.equal(profile.resolveFollowSystem(null, []), 'en');
+  assert.equal(profile.resolveFollowSystem(null, undefined), 'en');
+});
+
+test('saving a language writes the device copy without touching the account', () => {
+  const storage = memoryStorage();
+  const profile = fresh(storage);
+  // saveLanguage only writes the device copy; the account write is a separate
+  // explicit syncLanguageToAccount() call (a no-op in Node, which has no
+  // window and so no fetch).
+  profile.saveLanguage('id');
+  assert.deepEqual(JSON.parse(storage.getItem('turnly.user')), { language: 'id' });
+});
+
+test('a server language is applied verbatim and an unsupported one is ignored', () => {
+  const storage = memoryStorage();
+  const profile = fresh(storage);
+  assert.equal(profile.applyServerLanguage('id'), 'id');
+  assert.equal(profile.getLanguage(), 'id');
+  assert.equal(profile.applyServerLanguage('fr'), null);
+  assert.equal(profile.getLanguage(), 'id', 'an unsupported server value leaves the stored one');
+});
