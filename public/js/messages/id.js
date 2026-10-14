@@ -32,6 +32,10 @@
     'groups.title': 'Arisan Anda',
     'groups.explainer': 'Arisan adalah tabungan bergilir: anggota membayar tiap periode dan bergantian menerima dana.',
     'groups.summary': '{paid} dari {total} lunas · Periode {round} dari {rounds}',
+    'groups.yourTurn': 'Giliran Anda: Periode {round} ({when})',
+    'groups.yourTurnNow': 'Giliran Anda: periode ini, Anda menerima dana',
+    'groups.yourTurnPassed': 'Giliran Anda sudah lewat: Periode {round}',
+    'groups.recipientNow': 'Penerima periode ini: {name}',
 
     // Detail arisan: lingkaran giliran dan sekelilingnya
     'detail.turnOf': 'Giliran {round} dari {rounds}',
