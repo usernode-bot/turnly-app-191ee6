@@ -121,14 +121,20 @@
     });
   }
 
-  // ── Language setting ─────────────────────────────────────────────────────
+  // ── Language toggle: ID | EN at the top right of the header ──────────────
   function renderLanguage() {
-    document.getElementById('language-label').textContent = t('language.title');
-    var select = document.getElementById('language-select');
-    select.querySelector('option[value="en"]').textContent = t('language.english');
-    select.querySelector('option[value="id"]').textContent = t('language.indonesian');
-    select.querySelector('option[value="system"]').textContent = t('language.system');
-    select.value = i18n.getEffectiveChoice();
+    var group = document.getElementById('language-toggle');
+    group.setAttribute('aria-label', t('language.title'));
+    var short = { id: t('language.short.id'), en: t('language.short.en') };
+    var names = { id: t('language.indonesian'), en: t('language.english') };
+    Array.prototype.forEach.call(group.querySelectorAll('.toggle-option'), function (btn) {
+      var lang = btn.getAttribute('data-lang');
+      btn.textContent = short[lang];
+      btn.setAttribute('aria-label', names[lang]);
+      // What is actually showing: also highlights while a ?lang= link
+      // forces the language for this visit.
+      btn.setAttribute('aria-pressed', String(i18n.getLocale() === lang));
+    });
   }
 
   function render() {
@@ -145,9 +151,11 @@
   document.getElementById('btn-arisan-baru').addEventListener('click', function () {
     app.toast(t('home.newArisanDemo'));
   });
-  document.getElementById('language-select').addEventListener('change', function (e) {
-    i18n.setChoice(e.target.value);
-    renderLanguage(); // the select text itself, even if the locale did not change
+  document.getElementById('language-toggle').addEventListener('click', function (e) {
+    var btn = e.target.closest('.toggle-option');
+    if (!btn) return;
+    i18n.setChoice(btn.getAttribute('data-lang'));
+    renderLanguage(); // the labels themselves, even if the locale did not change
   });
 
   window.TurnlyBeranda = { render: render };

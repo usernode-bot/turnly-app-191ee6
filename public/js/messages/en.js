@@ -111,9 +111,13 @@
     'demo.note': 'This screen shows sample data for demo mode.',
 
     'language.title': 'Language',
+    'language.short.en': 'EN',
+    'language.short.id': 'ID',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Follow system',
+    'language.firstLaunch.title': 'Choose your language',
+    'language.firstLaunch.hint': 'You can change it any time with ID | EN at the top of Home.',
 
     // Quick revision workshop (revisi.html): the owner's tool for previewing
     // the app at real screen widths and queueing point-by-point revisions.

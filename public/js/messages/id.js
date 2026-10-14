@@ -99,9 +99,13 @@
     'demo.note': 'Tampilan berisi data contoh untuk mode demo.',
 
     'language.title': 'Bahasa',
+    'language.short.en': 'EN',
+    'language.short.id': 'ID',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Ikuti sistem',
+    'language.firstLaunch.title': 'Pilih bahasa',
+    'language.firstLaunch.hint': 'Anda bisa menggantinya kapan saja lewat ID | EN di atas Beranda.',
 
     // Bengkel revisi cepat (revisi.html): peralatan pemilik app untuk
     // melihat app di lebar layar sungguhan dan menyiapkan revisi per poin.

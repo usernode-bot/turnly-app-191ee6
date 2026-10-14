@@ -239,6 +239,21 @@
     @apply inline-flex shrink-0 items-center rounded-full bg-raised px-2 py-0.5 text-small text-muted;
   }
 
+  /* The ID | EN language toggle in the Home header: a quiet pill shaped
+     like the status chips and fields, the active half filled with the
+     accent the way the app already marks the thing that is in use. It
+     switches the whole app in one tap; it is never a primary action. */
+  .toggle {
+    @apply inline-flex shrink-0 rounded-full border border-line bg-surface p-0.5;
+  }
+  .toggle-option {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-small font-medium text-fg
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus;
+  }
+  .toggle-option[aria-pressed="true"] {
+    @apply bg-accent text-on-accent;
+  }
+
   /* The states of anything that loads data. Show exactly one at a time:
      - loading: .skeleton shapes where the data will be, never a blank;
      - empty, only when the load WORKED and found nothing: a title, one
