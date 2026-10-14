@@ -54,6 +54,14 @@
     return LANGUAGES.indexOf(lang) !== -1 ? lang : null;
   }
 
+  // True when the stored profile object has its own `language` property,
+  // including null: null means an explicit "follow system", which is a
+  // choice, while a missing property means the person never chose one. The
+  // first-launch language sheet uses this to decide whether to appear.
+  function hasLanguage() {
+    return Object.prototype.hasOwnProperty.call(read(), 'language');
+  }
+
   // lang is 'en', 'id' or null. null ("follow system") and anything
   // unknown store the null column value. Other profile fields survive.
   function setLanguage(lang) {
@@ -69,6 +77,7 @@
     read: read,
     write: write,
     getLanguage: getLanguage,
+    hasLanguage: hasLanguage,
     setLanguage: setLanguage,
   };
 });

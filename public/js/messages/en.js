@@ -45,6 +45,10 @@
     'groups.title': 'Your arisan groups',
     'groups.explainer': 'An arisan is a rotating savings group: members pay in each round and take turns receiving the pot.',
     'groups.summary': '{paid} of {total} members paid · Round {round} of {rounds}',
+    'groups.yourTurn': 'Your turn: Round {round} ({when})',
+    'groups.yourTurnNow': 'Your turn: this round, you receive the pot',
+    'groups.yourTurnPassed': 'Your turn was Round {round}',
+    'groups.recipientNow': 'Recipient this round: {name}',
 
     // Detail arisan: the turn circle and its surroundings
     'detail.turnOf': 'Turn {round} of {rounds}',
@@ -112,9 +116,13 @@
     'demo.note': 'This screen shows sample data for demo mode.',
 
     'language.title': 'Language',
+    'language.short.en': 'EN',
+    'language.short.id': 'ID',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Follow system',
+    'language.firstLaunch.title': 'Choose your language',
+    'language.firstLaunch.hint': 'You can change it any time with ID | EN at the top of Home.',
 
     // Quick revision workshop (revisi.html): the owner's tool for previewing
     // the app at real screen widths and queueing point-by-point revisions.

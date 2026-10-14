@@ -33,6 +33,10 @@
     'groups.title': 'Arisan Anda',
     'groups.explainer': 'Arisan adalah tabungan bergilir: anggota membayar tiap periode dan bergantian menerima dana.',
     'groups.summary': '{paid} dari {total} anggota sudah bayar · Periode {round} dari {rounds}',
+    'groups.yourTurn': 'Giliran Anda: Periode {round} ({when})',
+    'groups.yourTurnNow': 'Giliran Anda: periode ini, Anda menerima dana',
+    'groups.yourTurnPassed': 'Giliran Anda sudah lewat: Periode {round}',
+    'groups.recipientNow': 'Penerima periode ini: {name}',
 
     // Detail arisan: lingkaran giliran dan sekelilingnya
     'detail.turnOf': 'Giliran {round} dari {rounds}',
@@ -100,9 +104,13 @@
     'demo.note': 'Tampilan berisi data contoh untuk mode demo.',
 
     'language.title': 'Bahasa',
+    'language.short.en': 'EN',
+    'language.short.id': 'ID',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Ikuti sistem',
+    'language.firstLaunch.title': 'Pilih bahasa',
+    'language.firstLaunch.hint': 'Anda bisa menggantinya kapan saja lewat ID | EN di atas Beranda.',
 
     // Bengkel revisi cepat (revisi.html): peralatan pemilik app untuk
     // melihat app di lebar layar sungguhan dan menyiapkan revisi per poin.

@@ -61,3 +61,38 @@ test('tanggalPlus offsets whole days across month and year boundaries', () => {
   assert.equal(d.tanggalPlus('2026-10-05', 0), '2026-10-05');
   assert.throws(() => d.tanggalPlus('7/10/2026', 1));
 });
+
+test('inisialGrup takes the initials after a leading "Arisan"', () => {
+  assert.equal(d.inisialGrup('Arisan Keluarga Besar'), 'KB');
+  assert.equal(d.inisialGrup('Arisan Kantor Lantai 3'), 'KL3'); // digits stay whole
+  assert.equal(d.inisialGrup('Arisan'), 'A'); // nothing left to drop
+  assert.equal(d.inisialGrup('arisan rt'), 'R');
+  assert.equal(d.inisialGrup('Geng RT 05'), 'GR0'); // capped at 3 characters
+  assert.equal(d.inisialGrup('Arisan  Kantor   Lantai'), 'KL'); // extra spaces ignored
+});
+
+test('formatBulanTahun follows the locale, on the Jakarta calendar day', () => {
+  assert.equal(d.formatBulanTahun('2026-12-07', 'id'), 'Des 2026');
+  assert.equal(d.formatBulanTahun('2026-12-07', 'en'), 'Dec 2026');
+  assert.equal(d.formatBulanTahun('2026-11-06', 'en'), 'Nov 2026');
+});
+
+test('giliranPengguna sorts the turn into nanti, sekarang and lewat', () => {
+  const aktif = { nomor: 4, tanggal_jatuh_tempo: '2026-10-07' };
+  const bulanan = { periode: 'bulanan', periode_aktif: aktif };
+  assert.deepEqual(
+    d.giliranPengguna(bulanan, { urutan_giliran: 5 }),
+    { nomor: 5, keadaan: 'nanti', tanggal: '2026-11-06' }, // 30-day step
+  );
+  assert.equal(d.giliranPengguna(bulanan, { urutan_giliran: 4 }).keadaan, 'sekarang');
+  assert.equal(d.giliranPengguna(bulanan, { urutan_giliran: 4 }).tanggal, null);
+  const lewat = d.giliranPengguna(bulanan, { urutan_giliran: 2 });
+  assert.equal(lewat.keadaan, 'lewat');
+  assert.equal(lewat.tanggal, null); // a past turn shows no date
+
+  const mingguan = { periode: 'mingguan', periode_aktif: { nomor: 2, tanggal_jatuh_tempo: '2026-10-02' } };
+  assert.deepEqual(
+    d.giliranPengguna(mingguan, { urutan_giliran: 3 }),
+    { nomor: 3, keadaan: 'nanti', tanggal: '2026-10-09' }, // 7-day step
+  );
+});
