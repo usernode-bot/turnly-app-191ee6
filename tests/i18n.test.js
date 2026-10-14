@@ -155,3 +155,34 @@ test('Follow system clears the profile language and the device key', () => {
   // No platform locale and no device languages in Node: English.
   assert.equal(fresh.getLocale(), 'en');
 });
+
+// The first-launch language sheet (app.js) shows only when the device has
+// no saved choice: nothing at all, or the legacy device-wide key, or a
+// profile whose language is present (null = an explicit Follow system).
+test('hasSavedChoice: false on a first launch, true for every saved shape', () => {
+  let fresh = freshI18n(memoryStorage());
+  assert.equal(fresh.hasSavedChoice(), false, 'nothing saved anywhere');
+  assert.equal(fresh.hasUrlLocale(), false);
+
+  fresh = freshI18n(memoryStorage());
+  fresh.setChoice('system'); // a choice this visit counts even if saving failed
+  assert.equal(fresh.hasSavedChoice(), true, 'setChoice marks the visit');
+
+  const storage = memoryStorage();
+  storage.setItem('turnly.lang', 'id'); // legacy device-wide preference only
+  fresh = freshI18n(storage);
+  assert.equal(fresh.hasSavedChoice(), true, 'the legacy key is a saved choice');
+
+  fresh = freshI18n(memoryStorage());
+  fresh.setChoice('system'); // writes { language: null } to the profile
+  const storage2 = memoryStorage();
+  storage2.setItem('turnly.user', JSON.stringify({ language: null }));
+  fresh = freshI18n(storage2);
+  assert.equal(fresh.hasSavedChoice(), true, 'an explicit null is a saved choice');
+});
+
+test('hasUrlLocale is true while a ?lang= link forces the language', () => {
+  // The pure resolver covers the resolution itself; here only the flag.
+  const fresh = freshI18n(memoryStorage());
+  assert.equal(fresh.hasUrlLocale(), false, 'no URL override in Node');
+});

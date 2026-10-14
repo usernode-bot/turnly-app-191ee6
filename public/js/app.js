@@ -253,6 +253,53 @@
     dialog.showModal();
   }
 
+  // ── First-launch language sheet: one-time, on whichever screen opens ─────
+
+  var sheetBahasaTerbuka = false;
+
+  function bukaSheetBahasa() {
+    if (sheetBahasaTerbuka) return;
+    sheetBahasaTerbuka = true;
+    var isi = document.getElementById('tpl-sheet-bahasa').content.firstElementChild.cloneNode(true);
+    isi.querySelector('#bahasa-judul').textContent = t('language.firstLaunch.title');
+    isi.querySelector('#bahasa-hint').textContent = t('language.firstLaunch.hint');
+    var names = {
+      en: t('language.english'),
+      id: t('language.indonesian'),
+      system: t('language.system'),
+    };
+    var sheet = null;
+    var dialog = null;
+    var tutup = function () {
+      // Closing without choosing counts as Follow system, so the sheet
+      // never comes back on every visit: hasSavedChoice() is true after
+      // this even when nothing could be saved (private mode).
+      if (!i18n.hasSavedChoice()) i18n.setChoice('system');
+      sheetBahasaTerbuka = false;
+    };
+    Array.prototype.forEach.call(isi.querySelectorAll('button[data-lang]'), function (btn) {
+      var lang = btn.getAttribute('data-lang');
+      btn.textContent = names[lang];
+      btn.addEventListener('click', function () {
+        i18n.setChoice(lang); // rerender switches the screen behind the sheet
+        if (sheet) sheet.dismiss();
+        if (dialog) dialog.close();
+      });
+    });
+
+    if (un && un.presentSheet) {
+      sheet = un.presentSheet({ contentEl: isi, onDismiss: tutup });
+      return;
+    }
+    // Fallback sheet for a plain local run where the hosted kit is absent.
+    dialog = document.createElement('dialog');
+    dialog.className = 'sheet-fallback';
+    dialog.appendChild(isi);
+    document.body.appendChild(dialog);
+    dialog.addEventListener('close', tutup);
+    dialog.showModal();
+  }
+
   // ── Modal tolak bukti: reject with an optional reason ────────────────────
 
   function bukaModalTolak(arisan, anggota) {
@@ -332,8 +379,13 @@
   }
 
   // Called from detail.js, the last screen script: by then both renderers
-  // are registered and the first paint can happen.
-  function start() { route(); }
+  // are registered and the first paint can happen. After the route, the
+  // one-time language sheet for a device that never saved a choice (a
+  // ?lang= visit keeps it out of the way).
+  function start() {
+    route();
+    if (!i18n.hasSavedChoice() && !i18n.hasUrlLocale()) bukaSheetBahasa();
+  }
 
   function rerender() {
     if (!tampilan) return;
