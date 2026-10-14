@@ -39,10 +39,15 @@ const GUEST_AUDIENCE = APP_AUDIENCE ? APP_AUDIENCE + ':guest' : null;
 const GUEST_PUBLIC_KEY = (process.env.USERNODE_GUEST_JWT_PUBLIC_KEY || '')
   .replace(/\\n/g, '\n');
 
-// Paths that stay open without authentication. Add a path here (and add it
-// with `app.get`/`app.post` below) if you deliberately want it public.
-// Everything else requires a valid platform-issued JWT.
-const PUBLIC_API_PATHS = new Set(['/health']);
+// Which API requests stay open without authentication lives in api-access.js
+// so it can be unit-tested (see tests/api-access.test.js). GET /api/me is
+// deliberately an open READ: the revision workshop's preview frames load
+// /index.html same-origin with no identity token, and a gated read would 401
+// in each — a console error, which fails the workshop's "no console errors"
+// check. It is safe because the route only ever reports the caller
+// ({ authenticated: false } without a token). The write, POST /api/me, is not
+// listed and keeps requiring an account.
+const { isPublicApiRequest } = require('./api-access');
 
 app.use(express.json());
 
@@ -170,7 +175,7 @@ app.use((req, res, next) => {
   // `/api/*` included, so read routes must not assume req.user (use
   // `req.user ? req.user.id : null`). Every write needs an account.
   if (req.method !== 'GET' || req.path.startsWith('/api/')) {
-    if (PUBLIC_API_PATHS.has(req.path)) return next();
+    if (isPublicApiRequest(req.method, req.path, !!req.user)) return next();
     if (!req.user && req.guest) {
       if (req.method === 'GET' || req.method === 'HEAD') return next();
       return res.status(401).json({ error: 'account_required' });
@@ -192,6 +197,8 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 const LANGUAGES = new Set(['en', 'id']);
 
 app.get('/api/me', async (req, res) => {
+  // An open READ by design (see api-access.js): a caller without a verified
+  // platform token gets only this, never a real person's language.
   if (!req.user) return res.json({ authenticated: false, language: null });
   try {
     await schemaReady;
