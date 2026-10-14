@@ -36,13 +36,16 @@
   }
 
   // ── Hero: the pengguna's unpaid iuran, nearest due first ─────────────────
-  function jatuhTempoText(arisan) {
+  // The due line splits in two: the date line (hidden on the due day, so
+  // "Due today" does not repeat it) and the emphasised days line.
+  function jatuhTempo(arisan) {
     var jt = arisan.periode_aktif.tanggal_jatuh_tempo;
     var tanggal = d.formatTanggalPendek(jt, i18n.getLocale());
     var n = d.selisihHari(HARI_INI, jt);
-    if (n === 0) return t('home.dueToday');
-    if (n < 0) return t('home.pastDue', { days: -n });
-    return t('home.dueIn', { date: tanggal, days: n });
+    if (n === 0) return { tanggal: null, sisa: t('home.dueToday') };
+    var due = t('home.dueOn', { date: tanggal });
+    if (n < 0) return { tanggal: due, sisa: t('home.pastDue', { days: -n }) };
+    return { tanggal: due, sisa: t('home.daysLeft', { days: n }) };
   }
 
   function renderHero() {
@@ -62,6 +65,7 @@
     var nama = document.getElementById('hero-nama');
     var nominal = document.getElementById('hero-nominal');
     var tempo = document.getElementById('hero-jatuh-tempo');
+    var sisa = document.getElementById('hero-sisa-hari');
     var tombol = document.getElementById('btn-bayar');
 
     if (!belumBayar.length) {
@@ -70,6 +74,7 @@
       nama.textContent = t('home.allPaid');
       nominal.hidden = true;
       tempo.hidden = true;
+      sisa.hidden = true;
       tombol.hidden = true;
       return;
     }
@@ -79,10 +84,13 @@
     label.textContent = t('home.dueTitle');
     nama.textContent = pilihan.arisan.nama;
     nominal.textContent = d.formatRupiah(pilihan.arisan.nominal);
-    tempo.textContent = jatuhTempoText(pilihan.arisan);
+    var jt = jatuhTempo(pilihan.arisan);
+    tempo.textContent = jt.tanggal || '';
+    tempo.hidden = !jt.tanggal;
+    sisa.textContent = jt.sisa;
+    sisa.hidden = false;
     tombol.textContent = t('pay.action');
     nominal.hidden = false;
-    tempo.hidden = false;
     tombol.hidden = false;
   }
 
@@ -106,7 +114,7 @@
       kiri.appendChild(app.avatarEl(milik.anggota.nama_tampil, milik.status, { mini: true }));
       var teks = app.el('div', 'min-w-0');
       teks.appendChild(app.el('p', 'truncate text-body font-medium', arisan.nama));
-      teks.appendChild(app.el('p', 'truncate text-small text-muted', t('groups.summary', {
+      teks.appendChild(app.el('p', 'text-small text-muted', t('groups.summary', {
         paid: d.hitungLunas(arisan),
         total: arisan.anggota.length,
         round: arisan.periode_aktif.nomor,

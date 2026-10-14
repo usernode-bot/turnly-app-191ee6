@@ -60,6 +60,8 @@ module.exports = {
         danger: token('danger'), // status: telat, destructive
         'on-danger': token('on-danger'),
         'danger-soft': token('danger-soft'), // chip-telat background
+        unpaid: token('unpaid'), // status: belum bayar
+        'unpaid-soft': token('unpaid-soft'), // chip-belum background
         hero: token('hero'), // the hero payment block
         'hero-fg': token('hero-fg'), // text on the hero block
         'hero-muted': token('hero-muted'), // secondary text on the hero block

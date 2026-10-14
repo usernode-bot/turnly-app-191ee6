@@ -22,7 +22,8 @@
     'home.greeting.evening': 'Selamat sore, {name}',
     'home.greeting.night': 'Selamat malam, {name}',
     'home.dueTitle': 'Iuran yang harus dibayar',
-    'home.dueIn': 'Jatuh tempo {date}, {days} hari lagi',
+    'home.dueOn': 'Jatuh tempo {date}',
+    'home.daysLeft': '{days} hari lagi',
     'home.dueToday': 'Jatuh tempo hari ini',
     'home.pastDue': 'Lewat jatuh tempo {days} hari',
     'home.allPaid': 'Semua iuran lunas',
@@ -31,7 +32,7 @@
 
     'groups.title': 'Arisan Anda',
     'groups.explainer': 'Arisan adalah tabungan bergilir: anggota membayar tiap periode dan bergantian menerima dana.',
-    'groups.summary': '{paid} dari {total} lunas · Periode {round} dari {rounds}',
+    'groups.summary': '{paid} dari {total} anggota sudah bayar · Periode {round} dari {rounds}',
 
     // Detail arisan: lingkaran giliran dan sekelilingnya
     'detail.turnOf': 'Giliran {round} dari {rounds}',

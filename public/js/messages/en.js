@@ -34,7 +34,8 @@
     'home.greeting.evening': 'Good evening, {name}',
     'home.greeting.night': 'Good evening, {name}',
     'home.dueTitle': 'Contribution due',
-    'home.dueIn': 'Due {date}, {days, plural, one{in 1 day} other{in # days}}',
+    'home.dueOn': 'Due {date}',
+    'home.daysLeft': '{days, plural, one{In 1 day} other{In # days}}',
     'home.dueToday': 'Due today',
     'home.pastDue': '{days, plural, one{1 day} other{# days}} past due',
     'home.allPaid': 'All your contributions are paid',
@@ -43,7 +44,7 @@
 
     'groups.title': 'Your arisan groups',
     'groups.explainer': 'An arisan is a rotating savings group: members pay in each round and take turns receiving the pot.',
-    'groups.summary': '{paid} of {total} paid · Round {round} of {rounds}',
+    'groups.summary': '{paid} of {total} members paid · Round {round} of {rounds}',
 
     // Detail arisan: the turn circle and its surroundings
     'detail.turnOf': 'Turn {round} of {rounds}',
