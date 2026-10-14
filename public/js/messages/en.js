@@ -68,11 +68,32 @@
     'action.reject': 'Reject',
     'action.remind': 'Remind',
 
+    // Ingatkan (remind): the per-row button and its cooldown, the sticky bulk
+    // action, the confirm sheet and the Pengingat history rows. {time} is a
+    // relative timestamp built by reminders.js, never a stored number.
+    'reminder.bulk': '{count, plural, one{Remind 1 member} other{Remind # members}}',
+    'reminder.again': 'Remind again',
+    'reminder.cooldown': '{name} was reminded today. Try again tomorrow.',
+    'reminder.sentLine': 'Reminded {time}',
+    'reminder.sentToast': 'Reminder recorded for {name}',
+    'reminder.bulkToast': '{count, plural, one{1 reminder recorded} other{# reminders recorded}}',
+    'reminder.confirmTitle': '{count, plural, one{Remind 1 member} other{Remind # members}}',
+    'reminder.confirmBody': 'The app records one reminder for each member listed below. Nobody is messaged automatically.',
+    'reminder.confirmSend': 'Record reminders',
+    'reminder.confirmCancel': 'Cancel',
+    'reminder.done': 'Done',
+    'reminder.sheetTitle': 'Reminders recorded',
+    'reminder.sheetBody': '{count, plural, one{1 reminder was recorded for the unpaid member.} other{# reminders were recorded for the unpaid members.}}',
+    'reminder.historyTitle': 'Reminders',
+    'reminder.historyEmpty': 'No reminders recorded yet.',
+    'reminder.ago.now': 'just now',
+    'reminder.ago.minutes': '{count, plural, one{1 minute ago} other{# minutes ago}}',
+    'reminder.ago.hours': '{count, plural, one{1 hour ago} other{# hours ago}}',
+    'reminder.ago.days': '{count, plural, one{1 day ago} other{# days ago}}',
+
     'reject.title': 'Reject proof from {name}',
     'reject.reasonLabel': 'Reason (optional)',
     'reject.reasonPlaceholder': 'For example: the amount does not match',
-
-    'bar.remindUnpaid': '{count, plural, one{Remind 1 member} other{Remind # members}}',
 
     'status.paid': 'Paid',
     'status.awaiting': 'Awaiting confirmation',
@@ -106,14 +127,15 @@
     'toast.accountCopied': 'Account number copied',
     'toast.confirmed': 'Confirmed {name} as paid',
     'toast.rejected': 'Proof rejected. {name} can send a new one.',
-    'toast.reminderSent': 'Reminder sent to {name}',
-    'toast.remindersSent': '{count, plural, one{Reminder sent to 1 member} other{Reminder sent to # members}}',
     'demo.note': 'This screen shows sample data for demo mode.',
 
     'language.title': 'Language',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Follow system',
+    'language.savedAccount': 'Saved to your account',
+    'language.savedDevice': 'Saved on this device only',
+    'language.savedPending': 'Saved on this device for now. It moves to your account when you are online.',
 
     // Quick revision workshop (revisi.html): the owner's tool for previewing
     // the app at real screen widths and queueing point-by-point revisions.

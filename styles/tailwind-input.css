@@ -270,6 +270,15 @@
     padding-bottom: max(0.75rem, var(--un-safe-inset-bottom, 0px));
   }
 
+  /* Visually hidden but readable by assistive tech: the reminder ARIA live
+     region (Detail arisan) announces state changes from here. */
+  .sr-only {
+    @apply absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    margin: -1px;
+  }
+
   /* Fallback bottom sheet for when the usernode-native kit cannot load
      (a plain local run without the platform edge). Staging and production
      always get the real kit; this only keeps local development usable. */

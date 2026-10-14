@@ -12,6 +12,7 @@
   var i18n = app.i18n;
   var t = i18n.t;
   var demo = app.demo;
+  var profile = window.TurnlyUserProfile;
 
   var HARI_INI = app.HARI_INI;
 
@@ -122,6 +123,10 @@
   }
 
   // ── Language setting ─────────────────────────────────────────────────────
+  // The choice is saved to the account when the app is signed in (through
+  // user-profile.js -> POST /api/me, which writes users.language), and kept
+  // on the device as before. The line under the select says which of the two
+  // actually happened, so nobody is promised a sync that did not occur.
   function renderLanguage() {
     document.getElementById('language-label').textContent = t('language.title');
     var select = document.getElementById('language-select');
@@ -129,6 +134,27 @@
     select.querySelector('option[value="id"]').textContent = t('language.indonesian');
     select.querySelector('option[value="system"]').textContent = t('language.system');
     select.value = i18n.getEffectiveChoice();
+  }
+
+  function setLanguageStatus(teks) {
+    var note = document.getElementById('language-status');
+    note.textContent = teks;
+    note.hidden = !teks;
+  }
+
+  function simpanBahasa(choice) {
+    i18n.setChoice(choice);
+    renderLanguage(); // the select text itself, even if the locale did not change
+    if (!profile) { setLanguageStatus(''); return; }
+    // i18n.setChoice already wrote the profile language (null for "follow
+    // system"). The account gets exactly one write, of the resolved value the
+    // server stores.
+    setLanguageStatus(t('language.savedPending'));
+    Promise.resolve(profile.syncLanguageToAccount(profile.getLanguage())).then(function (serverLang) {
+      setLanguageStatus(serverLang ? t('language.savedAccount') : t('language.savedDevice'));
+    }, function () {
+      setLanguageStatus(t('language.savedDevice'));
+    });
   }
 
   function render() {
@@ -146,8 +172,7 @@
     app.toast(t('home.newArisanDemo'));
   });
   document.getElementById('language-select').addEventListener('change', function (e) {
-    i18n.setChoice(e.target.value);
-    renderLanguage(); // the select text itself, even if the locale did not change
+    simpanBahasa(e.target.value);
   });
 
   window.TurnlyBeranda = { render: render };
