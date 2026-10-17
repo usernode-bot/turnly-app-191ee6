@@ -139,6 +139,24 @@
     });
   }
 
+  // The member the organizer should chase first this round: the first
+  // anggota in turn order whose contribution still presents as 'belum' or
+  // 'telat'. A missing iuran row and a rejected ('ditolak') row both
+  // present as 'belum', so they count; 'menunggu' (proof already sent)
+  // and 'lunas' do not. null when there is no active periode or nobody
+  // is left to pay.
+  function anggotaBerikutnyaBayar(arisan, hariIni) {
+    if (!arisan.periode_aktif) return null;
+    var urut = anggotaUrut(arisan);
+    for (var i = 0; i < urut.length; i++) {
+      var key = statusIuranTampil(
+        iuranUntukAnggota(arisan, urut[i].id), arisan.periode_aktif, hariIni
+      ).key;
+      if (key === 'belum' || key === 'telat') return urut[i];
+    }
+    return null;
+  }
+
   function anggotaDenganId(arisan, anggotaId) {
     var found = (arisan.anggota || []).filter(function (a) { return a.id === anggotaId; });
     return found[0] || null;
@@ -220,6 +238,7 @@
     statusIuranTampil: statusIuranTampil,
     iuranUntukAnggota: iuranUntukAnggota,
     anggotaUrut: anggotaUrut,
+    anggotaBerikutnyaBayar: anggotaBerikutnyaBayar,
     anggotaDenganId: anggotaDenganId,
     hitungLunas: hitungLunas,
     totalTerkumpul: totalTerkumpul,

@@ -123,7 +123,20 @@
     var peran = app.getRole();
     var pengguna = app.penggunaAnggota(arisan);
 
-    d.anggotaUrut(arisan).forEach(function (anggota) {
+    // Admin only: the member next to pay leads the list and carries the
+    // chip, so the organizer can remind them first. The rest keep turn
+    // order. The member view stays exactly as it was.
+    var urut = d.anggotaUrut(arisan);
+    var berikut = null;
+    if (peran === 'admin') {
+      berikut = d.anggotaBerikutnyaBayar(arisan, HARI_INI);
+      if (berikut) {
+        urut = urut.filter(function (a) { return a.id !== berikut.id; });
+        urut.unshift(berikut);
+      }
+    }
+
+    urut.forEach(function (anggota) {
       var status = d.statusIuranTampil(d.iuranUntukAnggota(arisan, anggota.id), arisan.periode_aktif, HARI_INI);
       var li = app.el('li', 'flex flex-col gap-2 px-4 py-3');
 
@@ -133,6 +146,7 @@
       namaBaris.appendChild(app.el('p', 'truncate text-body font-medium', anggota.nama_tampil));
       if (anggota.user_id === PENGGUNA_ID) namaBaris.appendChild(app.tagEl(t('tag.you')));
       if (anggota.id === arisan.admin_id) namaBaris.appendChild(app.tagEl(t('tag.admin')));
+      if (berikut && anggota.id === berikut.id) namaBaris.appendChild(app.el('span', 'chip chip-berikut', t('status.nextToPay')));
       atas.appendChild(namaBaris);
       atas.appendChild(app.chipEl(status));
       li.appendChild(atas);

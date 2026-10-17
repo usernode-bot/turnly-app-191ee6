@@ -214,6 +214,13 @@
   .chip-dana {
     @apply bg-raised text-fg;
   }
+  /* The Status tab's "next to pay" chip: the one member the organizer
+     should remind first, marked with the accent as a fill (the way the
+     app marks what needs attention now); on-accent ink keeps the pair
+     readable in both looks. */
+  .chip-berikut {
+    @apply bg-accent text-on-accent;
+  }
 
   /* Status avatars: the initial circle used in lists and, later, in the
      lingkaran giliran. The four states differ by more than colour:

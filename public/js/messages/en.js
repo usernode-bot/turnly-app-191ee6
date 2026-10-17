@@ -83,6 +83,7 @@
     'status.awaiting': 'Awaiting confirmation',
     'status.unpaid': 'Unpaid',
     'status.late': 'Late {days, plural, one{1 day} other{# days}}',
+    'status.nextToPay': 'Next to pay',
 
     'legend.title': 'What the statuses mean',
     'legend.paid': "This round's contribution was received",
