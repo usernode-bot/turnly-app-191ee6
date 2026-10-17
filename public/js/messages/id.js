@@ -71,6 +71,7 @@
     'status.awaiting': 'Menunggu konfirmasi',
     'status.unpaid': 'Belum bayar',
     'status.late': 'Telat {days} hari',
+    'status.nextToPay': 'Berikutnya bayar',
 
     'legend.title': 'Keterangan status',
     'legend.paid': 'Iuran periode ini diterima',
