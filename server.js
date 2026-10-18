@@ -130,6 +130,11 @@ app.use((req, res, next) => {
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
+// Who the caller is signed in as. Read-only: only the username the auth
+// middleware already verified goes out, guests get null, and a request with
+// no valid token still gets the 401 above.
+app.get('/api/me', (req, res) => res.json({ username: req.user ? req.user.username : null }));
+
 // The template ships no favicon file; index.html carries an inline SVG
 // icon instead. Answer 204 here so anything that still probes
 // /favicon.ico (older browsers, direct visits) doesn't fall through to

@@ -19,12 +19,23 @@
   // and reads this, so re-rendering never stacks click listeners.
   var arisanBayar = null;
 
-  // ── Greeting: the demo member's name, by the Jakarta clock ───────────────
+  // ── Greeting: the signed-in username, else the demo member's name, by the
+  // Jakarta clock ──────────────────────────────────────────────────────────
+  // The username is asked once per page load; until (and if) the answer
+  // arrives the demo member's name shows, so the greeting never goes blank.
+  // The ask only happens when the page carries the platform's identity token
+  // (the iframe adds ?token=… on load): without one there is nobody to
+  // identify, and a request would only draw a 401 into the console.
+  var namaPengguna = null;
+  var mintaNama = false;
+
   function renderGreeting() {
-    var nama = '';
-    for (var i = 0; i < demo.arisan.length && !nama; i++) {
-      var anggota = app.penggunaAnggota(demo.arisan[i]);
-      if (anggota) nama = anggota.nama_tampil;
+    var nama = namaPengguna;
+    if (!nama) {
+      for (var i = 0; i < demo.arisan.length && !nama; i++) {
+        var anggota = app.penggunaAnggota(demo.arisan[i]);
+        if (anggota) nama = anggota.nama_tampil;
+      }
     }
     var band = d.bandSapa(d.jamJakarta());
     var sapa;
@@ -33,6 +44,22 @@
     else if (band === 'sore') sapa = t('home.greeting.evening', { name: nama });
     else sapa = t('home.greeting.night', { name: nama });
     document.getElementById('home-greeting').textContent = sapa;
+
+    if (!mintaNama) {
+      mintaNama = true;
+      var token = new URLSearchParams(location.search).get('token');
+      if (token) {
+        fetch('/api/me', { headers: { 'x-usernode-token': token } })
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (body) {
+            if (body && typeof body.username === 'string' && body.username) {
+              namaPengguna = body.username;
+              renderGreeting();
+            }
+          })
+          .catch(function () {});
+      }
+    }
   }
 
   // ── Hero: the pengguna's unpaid iuran, nearest due first ─────────────────
