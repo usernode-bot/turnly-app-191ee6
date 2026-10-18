@@ -121,6 +121,53 @@
     tombol.hidden = false;
   }
 
+  // ── Read aloud (Bacakan): the hero block's status, spoken ────────────────
+  // Whole sentences built from the same data renderHero shows, one message
+  // key each. The amount goes in as plain digits so the voice reads it as a
+  // number ("500000 rupiah"); the screen keeps Rp500.000.
+  function kalimatHero() {
+    if (!arisanBayar) return [t('home.allPaid')];
+    var jt = arisanBayar.periode_aktif.tanggal_jatuh_tempo;
+    var n = d.selisihHari(HARI_INI, jt);
+    var dasar = { name: arisanBayar.nama, amount: String(arisanBayar.nominal) };
+    var kalimat = [];
+    if (n === 0) {
+      kalimat.push(t('read.dueToday', { name: dasar.name, amount: dasar.amount }));
+    } else if (n < 0) {
+      kalimat.push(t('read.late', {
+        name: dasar.name,
+        amount: dasar.amount,
+        date: d.formatTanggalPendek(jt, i18n.getLocale()),
+        days: -n,
+      }));
+    } else {
+      kalimat.push(t('read.dueIn', {
+        name: dasar.name,
+        amount: dasar.amount,
+        date: d.formatTanggalPendek(jt, i18n.getLocale()),
+        days: n,
+      }));
+    }
+    var penerima = d.penerimaPeriode(arisanBayar);
+    var milik = app.statusPengguna(arisanBayar);
+    if (penerima && milik) {
+      if (penerima.id === milik.anggota.id) kalimat.push(t('read.recipientYou'));
+      else kalimat.push(t('read.recipient', { name: penerima.nama_tampil }));
+    }
+    return kalimat;
+  }
+
+  function renderBacakan() {
+    var tombol = document.getElementById('btn-bacakan');
+    var suara = window.TurnlySpeech;
+    if (!suara || !suara.isSupported()) {
+      tombol.hidden = true;
+      return;
+    }
+    tombol.hidden = false;
+    tombol.textContent = suara.isSpeaking() ? t('read.stop') : t('read.start');
+  }
+
   // ── "Arisan Anda": one row per arisan, tap opens Detail ──────────────────
   function renderDaftarArisan() {
     document.getElementById('arisan-anda-label').textContent = t('groups.title');
@@ -206,11 +253,25 @@
     renderHero();
     renderDaftarArisan();
     renderLanguage();
+    renderBacakan();
   }
 
   // Static listeners: bound once, read the mutable module state.
   document.getElementById('btn-bayar').addEventListener('click', function () {
     if (arisanBayar) app.bukaSheetBayar(arisanBayar);
+  });
+  // Read aloud: the button the spec puts under Pay now. Tapping again stops
+  // the reading; the label flips through renderBacakan, also from the
+  // speak() end callback.
+  document.getElementById('btn-bacakan').addEventListener('click', function () {
+    var suara = window.TurnlySpeech;
+    if (!suara || !suara.isSupported()) return;
+    if (suara.isSpeaking()) {
+      suara.stop();
+    } else {
+      suara.speak(kalimatHero(), i18n.getLocale(), renderBacakan);
+    }
+    renderBacakan();
   });
   document.getElementById('btn-arisan-baru').addEventListener('click', function () {
     app.toast(t('home.newArisanDemo'));

@@ -206,3 +206,6 @@ same file — never hand-rolled.
 - Domain JS shapes mirror the planned database tables field for field
   (`arisan`, `anggota_arisan`, `periode`, `iuran`), so the backend stage
   slots in without renaming.
+- Read aloud on Home (Bacakan) uses `public/js/speech.js`: the browser's
+  built-in speech synthesis, nothing recorded or stored. Spoken amounts are
+  plain digits plus "rupiah"; the screen keeps `formatRupiah`.
