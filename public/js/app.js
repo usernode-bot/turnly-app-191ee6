@@ -219,10 +219,74 @@
 
     kirim.addEventListener('click', function () {
       if (kirim.disabled || !anggota) return;
-      tutupSheet();
-      setIuranStatus(arisan, anggota.id, 'menunggu');
-      toast(t('legend.awaiting'));
+      var rekam = function () {
+        tutupSheet();
+        setIuranStatus(arisan, anggota.id, 'menunggu');
+        toast(t('legend.awaiting'));
+      };
+      konfirmasiKirim(rekam);
     });
+
+    // ── Konfirmasi kirim bukti: names the group and the amount ─────────────
+    // One flag: a second tap on Send proof while the confirm is showing is
+    // ignored, so only one dialog opens.
+    var konfirmasiTerbuka = false;
+
+    function konfirmasiKirim(lanjut) {
+      if (konfirmasiTerbuka) return;
+      konfirmasiTerbuka = true;
+      var judul = t('pay.confirmTitle', { group: arisan.nama });
+      var pesan = t('pay.confirmMessage', { amount: d.formatRupiah(arisan.nominal) });
+      var labelKirim = t('pay.sendProof');
+      var tombol = [
+        { label: t('pay.cancel'), style: 'cancel' },
+        { label: labelKirim, style: 'default' },
+      ];
+      var tutupKonfirmasi = function () { konfirmasiTerbuka = false; };
+
+      if (un && un.alert) {
+        un.alert({ title: judul, message: pesan, buttons: tombol }).then(function (res) {
+          tutupKonfirmasi();
+          // The kit resolves { button }; match the Send proof button by the
+          // label or by the object itself (a backdrop dismiss resolves
+          // without it and does nothing).
+          var b = res && res.button;
+          var pilih = b === labelKirim
+            || b === tombol[1]
+            || (b && b.label === labelKirim);
+          if (pilih) lanjut();
+        }, tutupKonfirmasi);
+        return;
+      }
+
+      // Fallback confirm for a plain local run where the hosted kit is
+      // absent, built like bukaModalTolak's fallback; showModal() puts it
+      // in the top layer above the open fallback sheet.
+      var isi = el('div', 'flex flex-col gap-4 px-5 pb-6 pt-2');
+      isi.appendChild(el('h2', 'font-display text-heading', judul));
+      isi.appendChild(el('p', 'text-body', pesan));
+      var baris = el('div', 'flex gap-2');
+      var batal = el('button', 'btn-secondary min-w-0 flex-1', t('pay.cancel'));
+      var kirimBtn = el('button', 'btn-primary min-w-0 flex-1', labelKirim);
+      baris.appendChild(batal);
+      baris.appendChild(kirimBtn);
+      isi.appendChild(baris);
+
+      var dialog = document.createElement('dialog');
+      dialog.className = 'sheet-fallback';
+      dialog.appendChild(isi);
+      document.body.appendChild(dialog);
+      batal.addEventListener('click', function () { dialog.close(); });
+      kirimBtn.addEventListener('click', function () {
+        dialog.close();
+        lanjut();
+      });
+      dialog.addEventListener('close', function () {
+        tutupKonfirmasi();
+        dialog.remove();
+      });
+      dialog.showModal();
+    }
 
     var tombolSalin = isi.querySelector('#btn-salin');
     tombolSalin.addEventListener('click', function () {

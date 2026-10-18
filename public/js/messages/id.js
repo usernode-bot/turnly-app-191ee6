@@ -96,6 +96,8 @@
     'pay.sendProof': 'Kirim bukti',
     'pay.proofAlt': 'Foto bukti yang dipilih',
     'pay.cancel': 'Batal',
+    'pay.confirmTitle': 'Kirim bukti untuk {group}?',
+    'pay.confirmMessage': 'Iuran {amount} Anda akan tercatat terkirim, lalu admin memeriksanya.',
 
     'toast.accountCopied': 'Nomor rekening disalin',
     'toast.confirmed': 'Iuran {name} dikonfirmasi lunas',
