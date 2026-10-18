@@ -108,6 +108,8 @@
     'pay.sendProof': 'Send proof',
     'pay.proofAlt': 'Chosen proof photo',
     'pay.cancel': 'Cancel',
+    'pay.confirmTitle': 'Send proof for {group}?',
+    'pay.confirmMessage': 'Your {amount} contribution will be marked as sent, then the organizer checks it.',
 
     'toast.accountCopied': 'Account number copied',
     'toast.confirmed': 'Confirmed {name} as paid',
