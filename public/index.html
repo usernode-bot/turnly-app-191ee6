@@ -106,8 +106,16 @@
          public/js/beranda.js from i18n.js — no hardcoded copy here
          (tests/hardcoded-strings.test.js enforces it). -->
     <div id="beranda-view" class="mx-auto flex max-w-md flex-col gap-8 px-4 pb-10 pt-8" hidden>
-      <header class="flex flex-col gap-1">
+      <header class="flex items-start justify-between gap-3">
         <h1 id="home-greeting" class="font-display text-heading"></h1>
+        <!-- The language toggle: ID | EN at the top right, easy to find.
+             Labels and state are filled by beranda.js from i18n; the choice
+             applies at once and is saved to the user profile on this
+             device (public/js/user-profile.js). -->
+        <div id="language-toggle" class="toggle" role="group">
+          <button class="toggle-option" data-lang="id"></button>
+          <button class="toggle-option" data-lang="en"></button>
+        </div>
       </header>
 
       <!-- The hero payment block: the app's signature asymmetric corners
@@ -117,6 +125,7 @@
         <p id="hero-nama" class="font-display text-heading"></p>
         <p id="hero-nominal" class="font-display text-title tabular-nums"></p>
         <p id="hero-jatuh-tempo" class="text-body text-hero-muted"></p>
+        <p id="hero-sisa-hari" class="text-body font-semibold text-accent"></p>
         <button id="btn-bayar" class="btn-primary mt-3 w-full"></button>
       </section>
 
@@ -129,19 +138,8 @@
         <button id="btn-arisan-baru" class="btn-secondary mt-3 w-full"></button>
       </section>
 
-      <!-- The language setting: applies on change, saved to the user
-           profile on this device (public/js/user-profile.js). -->
-      <section>
-        <label id="language-label" for="language-select" class="section-label block"></label>
-        <select id="language-select" class="field">
-          <option value="en"></option>
-          <option value="id"></option>
-          <option value="system"></option>
-        </select>
-        <!-- Where the choice was kept: on the account (it follows you to
-             another device) or on this device only. Filled by beranda.js. -->
-        <p id="language-status" class="mt-2 px-1 text-small text-muted" hidden></p>
-      </section>
+      <!-- The language setting moved to the ID | EN toggle in the header
+           above: one language control, not two. -->
 
       <p id="demo-catatan" class="text-center text-small text-muted"></p>
       <!-- The owner's Quick revision workshop (public/revisi.html): the one
@@ -261,6 +259,19 @@
         <button id="btn-kirim" class="btn-primary w-full" disabled></button>
       </div>
       <button id="btn-batal" class="btn-secondary w-full"></button>
+    </div>
+  </template>
+
+  <!-- First-launch language choice: the content of the platform bottom
+       sheet, built the same way as the pay sheet above. Shown once by
+       app.js when this device has no saved language yet. -->
+  <template id="tpl-sheet-bahasa">
+    <div class="flex flex-col gap-4 px-5 pb-6 pt-2">
+      <h2 id="bahasa-judul" class="font-display text-heading"></h2>
+      <p id="bahasa-hint" class="text-body text-muted"></p>
+      <button class="btn-secondary w-full" data-lang="en"></button>
+      <button class="btn-secondary w-full" data-lang="id"></button>
+      <button class="btn-secondary w-full" data-lang="system"></button>
     </div>
   </template>
 

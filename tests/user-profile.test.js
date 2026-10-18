@@ -34,6 +34,15 @@ test('language is null until a supported one is set', () => {
   assert.equal(profile.getLanguage(), null);
 });
 
+test('hasLanguage tells a first launch from a saved choice, null included', () => {
+  const profile = fresh(memoryStorage());
+  assert.equal(profile.hasLanguage(), false, 'an empty store never chose');
+  profile.setLanguage('id');
+  assert.equal(profile.hasLanguage(), true);
+  profile.setLanguage(null); // null is an explicit Follow system, a choice
+  assert.equal(profile.hasLanguage(), true);
+});
+
 test('setLanguage stores the column value and keeps other profile fields', () => {
   const storage = memoryStorage();
   const profile = fresh(storage);

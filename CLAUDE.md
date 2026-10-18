@@ -100,9 +100,13 @@ change follows it, and updates it when a request changes the look on purpose.
 
 - **Palette:** accent turmeric yellow (light `#F0A202`, dark `#F6B93B`) with
   indigo-ink text `#222B5A` on it; status green `#1B7F52`/`#55C890` (lunas),
-  yellow-brown `#9A6200` (menunggu), red `#C0352B`/`#FF8279` (telat);
+  yellow-brown `#9A6200` (menunggu), orange `#A84800`/`#FFA657` (belum
+  bayar), red `#C0352B`/`#FF8279` (telat);
   neutrals lavender-grey `#F5F4F9` ground / navy `#141834` ground. Exact
-  values live as `R G B` tokens in `styles/tailwind-input.css`.
+  values live as `R G B` tokens in `styles/tailwind-input.css`. The accent
+  is a fill colour everywhere except the hero block's due-days line
+  (`#hero-sisa-hari`), the one place the yellow is used as text, on the
+  navy hero in both looks.
 - **Signature element:** the lingkaran giliran (turn circle, Tahap 2) —
   the status avatar circles built in Tahap 1 are its building blocks.
 - **Type scale:** `text-small` 13px, `text-body` 15px, `text-heading` 19px,
@@ -112,8 +116,8 @@ change follows it, and updates it when a request changes the look on purpose.
 The kit is in `styles/tailwind-input.css`: colour tokens with a light and
 a dark value (named in `tailwind.config.js`), and the components
 (`btn-primary`, `btn-secondary`, `field`, `list` and `list-row`, `card`,
-`chip` + status variants, `avatar` + status variants, `tag`, `hero`,
-`section-label`, `skeleton`, `state-empty`, `state-error`). Buttons:
+`chip` + status variants, `avatar` + status variants, `tag`, `toggle`,
+`hero`, `section-label`, `skeleton`, `state-empty`, `state-error`). Buttons:
 primary corners 14px / 48px tall, secondary and fields 10px / 44px. Status
 chips are fully rounded and ALWAYS carry the status word; the four avatar
 states differ by fill/border treatment, never colour alone (filled green /
@@ -152,14 +156,20 @@ same file — never hand-rolled.
   hardcoded copy in markup or screen scripts (`npm test` enforces it). The
   words live in `public/js/messages/en.js` and `id.js`, same keys in both.
   English is the default, Bahasa Indonesia the second language; the
-  "Language" setting (English / Bahasa Indonesia / Follow system) is saved
-  in the user profile on the device (`turnly.user`, `public/js/user-profile.js`;
-  its `language` field is 'en' | 'id' | null and maps onto the planned
-  `users.language` column), with the older device-wide `turnly.lang` read
-  as the fallback for devices that saved it before the profile existed,
-  and "Follow system" means the viewer's
+  language control is an ID | EN toggle at the top right of the Home
+  header (`public/js/beranda.js`, saved through the same setting), and a
+  one-time bottom sheet on first open asks English / Bahasa Indonesia /
+  Follow system when the device has no saved choice yet. The choice is
+  saved in the user profile on the device (`turnly.user`,
+  `public/js/user-profile.js`; its `language` field is 'en' | 'id' | null
+  and maps onto the planned `users.language` column; a present-but-null
+  `language` is an explicit Follow system, so `hasLanguage()` can tell a
+  first launch from a saved choice), with the older device-wide
+  `turnly.lang` read as the fallback for devices that saved it before the
+  profile existed, and "Follow system" means the viewer's
   Homeroom locale, then the device language, then English. `?lang=en|id`
-  forces a language for one page load (the Indonesian merge check uses it).
+  forces a language for one page load (the Indonesian merge check uses it;
+  such a visit never sees the first-launch sheet).
 - Messages are ICU: `{name}` variables and
   `{n, plural, one{...} other{# ...}}`. Never build a sentence by
   concatenating two messages or by computing a key with `+`; add a key that

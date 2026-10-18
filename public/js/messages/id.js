@@ -22,7 +22,8 @@
     'home.greeting.evening': 'Selamat sore, {name}',
     'home.greeting.night': 'Selamat malam, {name}',
     'home.dueTitle': 'Iuran yang harus dibayar',
-    'home.dueIn': 'Jatuh tempo {date}, {days} hari lagi',
+    'home.dueOn': 'Jatuh tempo {date}',
+    'home.daysLeft': '{days} hari lagi',
     'home.dueToday': 'Jatuh tempo hari ini',
     'home.pastDue': 'Lewat jatuh tempo {days} hari',
     'home.allPaid': 'Semua iuran lunas',
@@ -31,7 +32,11 @@
 
     'groups.title': 'Arisan Anda',
     'groups.explainer': 'Arisan adalah tabungan bergilir: anggota membayar tiap periode dan bergantian menerima dana.',
-    'groups.summary': '{paid} dari {total} lunas · Periode {round} dari {rounds}',
+    'groups.summary': '{paid} dari {total} anggota sudah bayar · Periode {round} dari {rounds}',
+    'groups.yourTurn': 'Giliran Anda: Periode {round} ({when})',
+    'groups.yourTurnNow': 'Giliran Anda: periode ini, Anda menerima dana',
+    'groups.yourTurnPassed': 'Giliran Anda sudah lewat: Periode {round}',
+    'groups.recipientNow': 'Penerima periode ini: {name}',
 
     // Detail arisan: lingkaran giliran dan sekelilingnya
     'detail.turnOf': 'Giliran {round} dari {rounds}',
@@ -86,6 +91,7 @@
     'status.awaiting': 'Menunggu konfirmasi',
     'status.unpaid': 'Belum bayar',
     'status.late': 'Telat {days} hari',
+    'status.nextToPay': 'Berikutnya bayar',
 
     'legend.title': 'Keterangan status',
     'legend.paid': 'Iuran periode ini diterima',
@@ -110,6 +116,8 @@
     'pay.sendProof': 'Kirim bukti',
     'pay.proofAlt': 'Foto bukti yang dipilih',
     'pay.cancel': 'Batal',
+    'pay.confirmTitle': 'Kirim bukti untuk {group}?',
+    'pay.confirmMessage': 'Iuran {amount} Anda akan tercatat terkirim, lalu admin memeriksanya.',
 
     'toast.accountCopied': 'Nomor rekening disalin',
     'toast.confirmed': 'Iuran {name} dikonfirmasi lunas',
@@ -117,12 +125,16 @@
     'demo.note': 'Tampilan berisi data contoh untuk mode demo.',
 
     'language.title': 'Bahasa',
+    'language.short.en': 'EN',
+    'language.short.id': 'ID',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Ikuti sistem',
     'language.savedAccount': 'Tersimpan di akun Anda',
     'language.savedDevice': 'Tersimpan di perangkat ini saja',
     'language.savedPending': 'Tersimpan di perangkat ini dulu. Pindah ke akun Anda saat online.',
+    'language.firstLaunch.title': 'Pilih bahasa',
+    'language.firstLaunch.hint': 'Anda bisa menggantinya kapan saja lewat ID | EN di atas Beranda.',
 
     // Bengkel revisi cepat (revisi.html): peralatan pemilik app untuk
     // melihat app di lebar layar sungguhan dan menyiapkan revisi per poin.

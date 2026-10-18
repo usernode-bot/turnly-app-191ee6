@@ -199,14 +199,14 @@ const LANGUAGES = new Set(['en', 'id']);
 app.get('/api/me', async (req, res) => {
   // An open READ by design (see api-access.js): a caller without a verified
   // platform token gets only this, never a real person's language.
-  if (!req.user) return res.json({ authenticated: false, language: null });
+  if (!req.user) return res.json({ authenticated: false, username: null, language: null });
   try {
     await schemaReady;
     const { rows } = await pool.query('SELECT language FROM users WHERE id = $1', [req.user.id]);
-    return res.json({ authenticated: true, language: rows[0] ? rows[0].language : null });
+    return res.json({ authenticated: true, username: req.user.username || null, language: rows[0] ? rows[0].language : null });
   } catch (err) {
     console.error('/api/me read failed: ' + err.message);
-    return res.json({ authenticated: true, language: null });
+    return res.json({ authenticated: true, username: req.user.username || null, language: null });
   }
 });
 

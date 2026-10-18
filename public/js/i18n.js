@@ -204,6 +204,7 @@
   // ── Runtime state ───────────────────────────────────────────────────────
 
   var choice = readChoice(); // the device-wide layer; the profile is read live
+  var chosenThisVisit = false; // set by setChoice, see hasSavedChoice
   var urlLocale = root ? urlLocaleOf() : null;
   var platformLocale = null;
   var locale = resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages());
@@ -254,8 +255,28 @@
     choice = next;
     urlLocale = null; // an explicit choice ends the URL override for this visit
     writeChoice(choice);
+    chosenThisVisit = true; // a choice this visit counts even if saving failed
     applyLocale(resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages()));
   }
+
+  // True when this device has a language choice: a saved profile language
+  // (null counts, it is an explicit "follow system"), a valid device-wide
+  // key from before the profile existed, or a choice made this visit even
+  // when saving failed (private mode). The first-launch language sheet
+  // shows only when this is false, so it never nags a person twice.
+  function hasSavedChoice() {
+    if (chosenThisVisit) return true;
+    if (profile.hasLanguage()) return true;
+    try {
+      var store = storage();
+      var saved = store && store.getItem(STORAGE_KEY);
+      return CHOICES.indexOf(saved) !== -1;
+    } catch (e) { return false; }
+  }
+
+  // True while a ?lang= link is forcing the language for this page load:
+  // the first-launch sheet stays out of the way of such a visit.
+  function hasUrlLocale() { return urlLocale !== null; }
 
   function setPlatformLocale(tag) {
     platformLocale = tag || null;
@@ -297,6 +318,8 @@
     getChoice: getChoice,
     getEffectiveChoice: getEffectiveChoice,
     setChoice: setChoice,
+    hasSavedChoice: hasSavedChoice,
+    hasUrlLocale: hasUrlLocale,
     setPlatformLocale: setPlatformLocale,
     onChange: onChange,
     mapTag: mapTag,

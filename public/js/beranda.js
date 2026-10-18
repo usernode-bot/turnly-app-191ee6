@@ -20,12 +20,23 @@
   // and reads this, so re-rendering never stacks click listeners.
   var arisanBayar = null;
 
-  // ── Greeting: the demo member's name, by the Jakarta clock ───────────────
+  // ── Greeting: the signed-in username, else the demo member's name, by the
+  // Jakarta clock ──────────────────────────────────────────────────────────
+  // The username is asked once per page load; until (and if) the answer
+  // arrives the demo member's name shows, so the greeting never goes blank.
+  // The ask only happens when the page carries the platform's identity token
+  // (the iframe adds ?token=… on load): without one there is nobody to
+  // identify, and a request would only draw a 401 into the console.
+  var namaPengguna = null;
+  var mintaNama = false;
+
   function renderGreeting() {
-    var nama = '';
-    for (var i = 0; i < demo.arisan.length && !nama; i++) {
-      var anggota = app.penggunaAnggota(demo.arisan[i]);
-      if (anggota) nama = anggota.nama_tampil;
+    var nama = namaPengguna;
+    if (!nama) {
+      for (var i = 0; i < demo.arisan.length && !nama; i++) {
+        var anggota = app.penggunaAnggota(demo.arisan[i]);
+        if (anggota) nama = anggota.nama_tampil;
+      }
     }
     var band = d.bandSapa(d.jamJakarta());
     var sapa;
@@ -34,16 +45,35 @@
     else if (band === 'sore') sapa = t('home.greeting.evening', { name: nama });
     else sapa = t('home.greeting.night', { name: nama });
     document.getElementById('home-greeting').textContent = sapa;
+
+    if (!mintaNama) {
+      mintaNama = true;
+      var token = new URLSearchParams(location.search).get('token');
+      if (token) {
+        fetch('/api/me', { headers: { 'x-usernode-token': token } })
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (body) {
+            if (body && typeof body.username === 'string' && body.username) {
+              namaPengguna = body.username;
+              renderGreeting();
+            }
+          })
+          .catch(function () {});
+      }
+    }
   }
 
   // ── Hero: the pengguna's unpaid iuran, nearest due first ─────────────────
-  function jatuhTempoText(arisan) {
+  // The due line splits in two: the date line (hidden on the due day, so
+  // "Due today" does not repeat it) and the emphasised days line.
+  function jatuhTempo(arisan) {
     var jt = arisan.periode_aktif.tanggal_jatuh_tempo;
     var tanggal = d.formatTanggalPendek(jt, i18n.getLocale());
     var n = d.selisihHari(HARI_INI, jt);
-    if (n === 0) return t('home.dueToday');
-    if (n < 0) return t('home.pastDue', { days: -n });
-    return t('home.dueIn', { date: tanggal, days: n });
+    if (n === 0) return { tanggal: null, sisa: t('home.dueToday') };
+    var due = t('home.dueOn', { date: tanggal });
+    if (n < 0) return { tanggal: due, sisa: t('home.pastDue', { days: -n }) };
+    return { tanggal: due, sisa: t('home.daysLeft', { days: n }) };
   }
 
   function renderHero() {
@@ -63,6 +93,7 @@
     var nama = document.getElementById('hero-nama');
     var nominal = document.getElementById('hero-nominal');
     var tempo = document.getElementById('hero-jatuh-tempo');
+    var sisa = document.getElementById('hero-sisa-hari');
     var tombol = document.getElementById('btn-bayar');
 
     if (!belumBayar.length) {
@@ -71,6 +102,7 @@
       nama.textContent = t('home.allPaid');
       nominal.hidden = true;
       tempo.hidden = true;
+      sisa.hidden = true;
       tombol.hidden = true;
       return;
     }
@@ -80,10 +112,13 @@
     label.textContent = t('home.dueTitle');
     nama.textContent = pilihan.arisan.nama;
     nominal.textContent = d.formatRupiah(pilihan.arisan.nominal);
-    tempo.textContent = jatuhTempoText(pilihan.arisan);
+    var jt = jatuhTempo(pilihan.arisan);
+    tempo.textContent = jt.tanggal || '';
+    tempo.hidden = !jt.tanggal;
+    sisa.textContent = jt.sisa;
+    sisa.hidden = false;
     tombol.textContent = t('pay.action');
     nominal.hidden = false;
-    tempo.hidden = false;
     tombol.hidden = false;
   }
 
@@ -104,15 +139,44 @@
       a.href = '/arisan/' + arisan.id;
 
       var kiri = app.el('div', 'flex min-w-0 items-center gap-3');
-      kiri.appendChild(app.avatarEl(milik.anggota.nama_tampil, milik.status, { mini: true }));
+      kiri.appendChild(app.avatarEl(milik.anggota.nama_tampil, milik.status, {
+        text: d.inisialGrup(arisan.nama),
+        silent: true,
+      }));
       var teks = app.el('div', 'min-w-0');
       teks.appendChild(app.el('p', 'truncate text-body font-medium', arisan.nama));
-      teks.appendChild(app.el('p', 'truncate text-small text-muted', t('groups.summary', {
+      teks.appendChild(app.el('p', 'text-small text-muted', t('groups.summary', {
         paid: d.hitungLunas(arisan),
         total: arisan.anggota.length,
         round: arisan.periode_aktif.nomor,
         rounds: arisan.total_periode,
       })));
+
+      // When this member receives the pot, then who receives it this round
+      // (hidden when that is the member themselves).
+      var giliran = d.giliranPengguna(arisan, milik.anggota);
+      if (giliran) {
+        if (giliran.keadaan === 'nanti') {
+          var when = arisan.periode === 'mingguan'
+            ? d.formatTanggalPendek(giliran.tanggal, i18n.getLocale())
+            : d.formatBulanTahun(giliran.tanggal, i18n.getLocale());
+          teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurn', {
+            round: giliran.nomor,
+            when: when,
+          })));
+        } else if (giliran.keadaan === 'sekarang') {
+          teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnNow')));
+        } else {
+          teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnPassed', {
+            round: giliran.nomor,
+          })));
+        }
+        var penerima = d.penerimaPeriode(arisan);
+        if (penerima && penerima.id !== milik.anggota.id) {
+          teks.appendChild(app.el('p', 'text-small text-muted',
+            t('groups.recipientNow', { name: penerima.nama_tampil })));
+        }
+      }
       kiri.appendChild(teks);
 
       a.appendChild(kiri);
@@ -122,39 +186,26 @@
     });
   }
 
-  // ── Language setting ─────────────────────────────────────────────────────
-  // The choice is saved to the account when the app is signed in (through
-  // user-profile.js -> POST /api/me, which writes users.language), and kept
-  // on the device as before. The line under the select says which of the two
-  // actually happened, so nobody is promised a sync that did not occur.
+  // ── Language toggle: ID | EN at the top right of the header ──────────────
   function renderLanguage() {
-    document.getElementById('language-label').textContent = t('language.title');
-    var select = document.getElementById('language-select');
-    select.querySelector('option[value="en"]').textContent = t('language.english');
-    select.querySelector('option[value="id"]').textContent = t('language.indonesian');
-    select.querySelector('option[value="system"]').textContent = t('language.system');
-    select.value = i18n.getEffectiveChoice();
-  }
-
-  function setLanguageStatus(teks) {
-    var note = document.getElementById('language-status');
-    note.textContent = teks;
-    note.hidden = !teks;
-  }
-
-  function simpanBahasa(choice) {
-    i18n.setChoice(choice);
-    renderLanguage(); // the select text itself, even if the locale did not change
-    if (!profile) { setLanguageStatus(''); return; }
-    // i18n.setChoice already wrote the profile language (null for "follow
-    // system"). The account gets exactly one write, of the resolved value the
-    // server stores.
-    setLanguageStatus(t('language.savedPending'));
-    Promise.resolve(profile.syncLanguageToAccount(profile.getLanguage())).then(function (serverLang) {
-      setLanguageStatus(serverLang ? t('language.savedAccount') : t('language.savedDevice'));
-    }, function () {
-      setLanguageStatus(t('language.savedDevice'));
+    var group = document.getElementById('language-toggle');
+    group.setAttribute('aria-label', t('language.title'));
+    var short = { id: t('language.short.id'), en: t('language.short.en') };
+    var names = { id: t('language.indonesian'), en: t('language.english') };
+    Array.prototype.forEach.call(group.querySelectorAll('.toggle-option'), function (btn) {
+      var lang = btn.getAttribute('data-lang');
+      btn.textContent = short[lang];
+      btn.setAttribute('aria-label', names[lang]);
+      // What is actually showing: also highlights while a ?lang= link
+      // forces the language for this visit.
+      btn.setAttribute('aria-pressed', String(i18n.getLocale() === lang));
     });
+  }
+
+  // The choice is kept on the device by i18n.setChoice; when signed in it is
+  // also written to the account (POST /api/me), once, without blocking the UI.
+  function syncBahasa() {
+    if (profile) profile.syncLanguageToAccount(profile.getLanguage());
   }
 
   function render() {
@@ -171,8 +222,12 @@
   document.getElementById('btn-arisan-baru').addEventListener('click', function () {
     app.toast(t('home.newArisanDemo'));
   });
-  document.getElementById('language-select').addEventListener('change', function (e) {
-    simpanBahasa(e.target.value);
+  document.getElementById('language-toggle').addEventListener('click', function (e) {
+    var btn = e.target.closest('.toggle-option');
+    if (!btn) return;
+    i18n.setChoice(btn.getAttribute('data-lang'));
+    renderLanguage(); // the labels themselves, even if the locale did not change
+    syncBahasa();
   });
 
   window.TurnlyBeranda = { render: render };

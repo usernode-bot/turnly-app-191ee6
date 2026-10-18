@@ -34,7 +34,8 @@
     'home.greeting.evening': 'Good evening, {name}',
     'home.greeting.night': 'Good evening, {name}',
     'home.dueTitle': 'Contribution due',
-    'home.dueIn': 'Due {date}, {days, plural, one{in 1 day} other{in # days}}',
+    'home.dueOn': 'Due {date}',
+    'home.daysLeft': '{days, plural, one{In 1 day} other{In # days}}',
     'home.dueToday': 'Due today',
     'home.pastDue': '{days, plural, one{1 day} other{# days}} past due',
     'home.allPaid': 'All your contributions are paid',
@@ -43,7 +44,11 @@
 
     'groups.title': 'Your arisan groups',
     'groups.explainer': 'An arisan is a rotating savings group: members pay in each round and take turns receiving the pot.',
-    'groups.summary': '{paid} of {total} paid · Round {round} of {rounds}',
+    'groups.summary': '{paid} of {total} members paid · Round {round} of {rounds}',
+    'groups.yourTurn': 'Your turn: Round {round} ({when})',
+    'groups.yourTurnNow': 'Your turn: this round, you receive the pot',
+    'groups.yourTurnPassed': 'Your turn was Round {round}',
+    'groups.recipientNow': 'Recipient this round: {name}',
 
     // Detail arisan: the turn circle and its surroundings
     'detail.turnOf': 'Turn {round} of {rounds}',
@@ -99,6 +104,7 @@
     'status.awaiting': 'Awaiting confirmation',
     'status.unpaid': 'Unpaid',
     'status.late': 'Late {days, plural, one{1 day} other{# days}}',
+    'status.nextToPay': 'Next to pay',
 
     'legend.title': 'What the statuses mean',
     'legend.paid': "This round's contribution was received",
@@ -123,6 +129,8 @@
     'pay.sendProof': 'Send proof',
     'pay.proofAlt': 'Chosen proof photo',
     'pay.cancel': 'Cancel',
+    'pay.confirmTitle': 'Send proof for {group}?',
+    'pay.confirmMessage': 'Your {amount} contribution will be marked as sent, then the organizer checks it.',
 
     'toast.accountCopied': 'Account number copied',
     'toast.confirmed': 'Confirmed {name} as paid',
@@ -130,12 +138,16 @@
     'demo.note': 'This screen shows sample data for demo mode.',
 
     'language.title': 'Language',
+    'language.short.en': 'EN',
+    'language.short.id': 'ID',
     'language.english': 'English',
     'language.indonesian': 'Bahasa Indonesia',
     'language.system': 'Follow system',
     'language.savedAccount': 'Saved to your account',
     'language.savedDevice': 'Saved on this device only',
     'language.savedPending': 'Saved on this device for now. It moves to your account when you are online.',
+    'language.firstLaunch.title': 'Choose your language',
+    'language.firstLaunch.hint': 'You can change it any time with ID | EN at the top of Home.',
 
     // Quick revision workshop (revisi.html): the owner's tool for previewing
     // the app at real screen widths and queueing point-by-point revisions.

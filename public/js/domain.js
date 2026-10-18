@@ -139,6 +139,24 @@
     });
   }
 
+  // The member the organizer should chase first this round: the first
+  // anggota in turn order whose contribution still presents as 'belum' or
+  // 'telat'. A missing iuran row and a rejected ('ditolak') row both
+  // present as 'belum', so they count; 'menunggu' (proof already sent)
+  // and 'lunas' do not. null when there is no active periode or nobody
+  // is left to pay.
+  function anggotaBerikutnyaBayar(arisan, hariIni) {
+    if (!arisan.periode_aktif) return null;
+    var urut = anggotaUrut(arisan);
+    for (var i = 0; i < urut.length; i++) {
+      var key = statusIuranTampil(
+        iuranUntukAnggota(arisan, urut[i].id), arisan.periode_aktif, hariIni
+      ).key;
+      if (key === 'belum' || key === 'telat') return urut[i];
+    }
+    return null;
+  }
+
   function anggotaDenganId(arisan, anggotaId) {
     var found = (arisan.anggota || []).filter(function (a) { return a.id === anggotaId; });
     return found[0] || null;
@@ -154,6 +172,49 @@
   // Total collected this periode: only confirmed lunas rows count.
   function totalTerkumpul(arisan) {
     return hitungLunas(arisan) * arisan.nominal;
+  }
+
+  // Group initials for an avatar, from the group's name: drop a leading
+  // "Arisan" when other words remain, keep all-digit words whole ('3' in
+  // Kantor Lantai 3), uppercase the rest, cap at 3 characters.
+  function inisialGrup(nama) {
+    var words = nama.split(/\s+/).filter(Boolean);
+    if (words.length > 1 && words[0].toLowerCase() === 'arisan') words = words.slice(1);
+    return words.map(function (w) {
+      return /^\d+$/.test(w) ? w : w.charAt(0).toUpperCase();
+    }).join('').slice(0, 3);
+  }
+
+  // When a member receives the pot: { nomor, keadaan: 'nanti'|'sekarang'|
+  // 'lewat', tanggal }. The date of a future turn follows the demo rounds'
+  // spacing from the active round's due date (30-day steps for 'bulanan',
+  // 7 for 'mingguan'); a past turn gets no date.
+  function giliranPengguna(arisan, anggota) {
+    var aktif = arisan.periode_aktif;
+    var nomor = anggota && anggota.urutan_giliran;
+    if (!aktif || nomor === undefined || nomor === null) return null;
+    var keadaan;
+    if (nomor > aktif.nomor) keadaan = 'nanti';
+    else if (nomor === aktif.nomor) keadaan = 'sekarang';
+    else keadaan = 'lewat';
+    var tanggal = null;
+    if (keadaan === 'nanti') {
+      var langkah = arisan.periode === 'mingguan' ? 7 : 30;
+      tanggal = tanggalPlus(aktif.tanggal_jatuh_tempo, (nomor - aktif.nomor) * langkah);
+    }
+    return { nomor: nomor, keadaan: keadaan, tanggal: tanggal };
+  }
+
+  // '2026-12-07' -> 'Des 2026' (id) or 'Dec 2026' (en): the month and year
+  // of a Jakarta calendar day, parsed and formatted in UTC like the other
+  // date formatters.
+  function formatBulanTahun(iso, locale) {
+    var instant = parseHari(iso);
+    return new Intl.DateTimeFormat(locale || 'en', {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(instant));
   }
 
   // The periode's recipient anggota.
@@ -177,9 +238,13 @@
     statusIuranTampil: statusIuranTampil,
     iuranUntukAnggota: iuranUntukAnggota,
     anggotaUrut: anggotaUrut,
+    anggotaBerikutnyaBayar: anggotaBerikutnyaBayar,
     anggotaDenganId: anggotaDenganId,
     hitungLunas: hitungLunas,
     totalTerkumpul: totalTerkumpul,
     penerimaPeriode: penerimaPeriode,
+    inisialGrup: inisialGrup,
+    giliranPengguna: giliranPengguna,
+    formatBulanTahun: formatBulanTahun,
   };
 });

@@ -48,10 +48,12 @@
  * kuning #F6B93B. Re-theme the app HERE: change the values, keep the names.
  *
  * Keep every TEXT pair at 4.5:1 or more in both looks: fg and muted on
- * ground, surface and raised; success/wait/danger on their -soft chip
+ * ground, surface and raised; success/wait/danger/unpaid on their -soft chip
  * backgrounds; on-accent on accent; on-success on success; hero-fg and
- * hero-muted on hero. Note the accent is a FILL colour only — never use
- * text-accent on a light surface (it fails contrast there).
+ * hero-muted on hero; accent on hero (the due-days line, about 6.4:1 light
+ * and 7.2:1 dark). The accent is a FILL colour only everywhere else — never
+ * text-accent on a light surface (it fails contrast there); the hero block
+ * is the one place accent text is allowed, because it is navy in both looks.
  *
  * Adopting the native UI kit later? Point its --un-accent and
  * --un-accent-contrast at the accent and on-accent tokens.
@@ -74,6 +76,8 @@
     --danger: 192 53 43;      /* #C0352B telat */
     --on-danger: 255 255 255;
     --danger-soft: 251 227 224; /* #FBE3E0 chip-telat background */
+    --unpaid: 168 72 0;       /* #A84800 belum bayar */
+    --unpaid-soft: 255 232 214; /* #FFE8D6 chip-belum background */
     --hero: 34 43 90;         /* #222B5A the hero payment block */
     --hero-fg: 245 244 249;   /* #F5F4F9 text on the hero block */
     --hero-muted: 185 190 224; /* #B9BEE0 secondary text on the hero block */
@@ -104,6 +108,8 @@
     --danger: 255 130 121;    /* #FF8279 */
     --on-danger: 58 32 32;
     --danger-soft: 58 32 32;  /* dark red blend */
+    --unpaid: 255 166 87;     /* #FFA657 */
+    --unpaid-soft: 60 40 26;  /* dark orange blend */
     --hero: 38 46 99;         /* #262E63 */
     --hero-fg: 245 244 249;
     --hero-muted: 185 190 224; /* #B9BEE0 */
@@ -197,7 +203,7 @@
     @apply bg-wait-soft text-wait;
   }
   .chip-belum {
-    @apply bg-raised text-fg;
+    @apply bg-unpaid-soft text-unpaid;
   }
   .chip-telat {
     @apply bg-danger-soft text-danger;
@@ -207,6 +213,13 @@
      this round's contributions, not about a past payout). */
   .chip-dana {
     @apply bg-raised text-fg;
+  }
+  /* The Status tab's "next to pay" chip: the one member the organizer
+     should remind first, marked with the accent as a fill (the way the
+     app marks what needs attention now); on-accent ink keeps the pair
+     readable in both looks. */
+  .chip-berikut {
+    @apply bg-accent text-on-accent;
   }
 
   /* Status avatars: the initial circle used in lists and, later, in the
@@ -237,6 +250,21 @@
   /* A small tag inside a row ("Anda", "Admin"). */
   .tag {
     @apply inline-flex shrink-0 items-center rounded-full bg-raised px-2 py-0.5 text-small text-muted;
+  }
+
+  /* The ID | EN language toggle in the Home header: a quiet pill shaped
+     like the status chips and fields, the active half filled with the
+     accent the way the app already marks the thing that is in use. It
+     switches the whole app in one tap; it is never a primary action. */
+  .toggle {
+    @apply inline-flex shrink-0 rounded-full border border-line bg-surface p-0.5;
+  }
+  .toggle-option {
+    @apply inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-small font-medium text-fg
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus;
+  }
+  .toggle-option[aria-pressed="true"] {
+    @apply bg-accent text-on-accent;
   }
 
   /* The states of anything that loads data. Show exactly one at a time:

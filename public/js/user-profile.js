@@ -93,6 +93,14 @@
     return nav.language ? [nav.language] : [];
   }
 
+  // True when the stored profile object has its own `language` property,
+  // including null: null means an explicit "follow system", which is a
+  // choice, while a missing property means the person never chose one. The
+  // first-launch language sheet uses this to decide whether to appear.
+  function hasLanguage() {
+    return Object.prototype.hasOwnProperty.call(read(), 'language');
+  }
+
   // lang is 'en', 'id' or null. Anything else stores the null column value.
   // Other profile fields survive. Returns the stored profile. This only
   // writes the device copy: the account write is a separate, explicit
@@ -170,6 +178,7 @@
     read: read,
     write: write,
     getLanguage: getLanguage,
+    hasLanguage: hasLanguage,
     setLanguage: setLanguage,
     saveLanguage: saveLanguage,
     syncLanguageToAccount: syncLanguageToAccount,

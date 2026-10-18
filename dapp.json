@@ -28,6 +28,12 @@
       ]
     },
     {
+      "name": "Home greeting renders a name",
+      "path": "/",
+      "expectSelector": "#home-greeting",
+      "expectText": "Good"
+    },
+    {
       "name": "Turn circle centre text (English default)",
       "path": "/arisan/demo-kb",
       "expectText": "Turn 4 of 10"
@@ -43,9 +49,15 @@
       "expectText": "Menunggu konfirmasi"
     },
     {
-      "name": "Language picker present",
+      "name": "Language toggle present in the Home header",
       "path": "/",
-      "expectSelector": "#language-select"
+      "expectSelector": "#language-toggle",
+      "expectText": "EN"
+    },
+    {
+      "name": "First-launch language sheet appears when no choice is saved",
+      "path": "/",
+      "expectText": "Choose your language"
     },
     {
       "id": "revisi.workshop",

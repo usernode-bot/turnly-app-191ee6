@@ -14,10 +14,13 @@ test('English plurals at 0, 1 and many', () => {
   assert.equal(i18n.t('status.late', { days: 0 }), 'Late 0 days');
   assert.equal(i18n.t('status.late', { days: 1 }), 'Late 1 day');
   assert.equal(i18n.t('status.late', { days: 3 }), 'Late 3 days');
-  assert.equal(i18n.t('home.dueIn', { date: 'Oct 7', days: 1 }), 'Due Oct 7, in 1 day');
-  assert.equal(i18n.t('home.dueIn', { date: 'Oct 7', days: 2 }), 'Due Oct 7, in 2 days');
+  assert.equal(i18n.t('home.dueOn', { date: 'Oct 7' }), 'Due Oct 7');
+  assert.equal(i18n.t('home.daysLeft', { days: 1 }), 'In 1 day');
+  assert.equal(i18n.t('home.daysLeft', { days: 2 }), 'In 2 days');
   assert.equal(i18n.t('home.pastDue', { days: 1 }), '1 day past due');
   assert.equal(i18n.t('home.pastDue', { days: 3 }), '3 days past due');
+  assert.equal(i18n.t('groups.summary', { paid: 7, total: 10, round: 4, rounds: 10 }),
+    '7 of 10 members paid · Round 4 of 10');
 });
 
 test('Indonesian plurals at 0, 1 and many (no plural forms)', () => {
@@ -25,7 +28,10 @@ test('Indonesian plurals at 0, 1 and many (no plural forms)', () => {
   assert.equal(i18n.t('status.late', { days: 0 }), 'Telat 0 hari');
   assert.equal(i18n.t('status.late', { days: 1 }), 'Telat 1 hari');
   assert.equal(i18n.t('status.late', { days: 3 }), 'Telat 3 hari');
-  assert.equal(i18n.t('home.dueIn', { date: '7 Okt', days: 2 }), 'Jatuh tempo 7 Okt, 2 hari lagi');
+  assert.equal(i18n.t('home.dueOn', { date: '7 Okt' }), 'Jatuh tempo 7 Okt');
+  assert.equal(i18n.t('home.daysLeft', { days: 2 }), '2 hari lagi');
+  assert.equal(i18n.t('groups.summary', { paid: 7, total: 10, round: 4, rounds: 10 }),
+    '7 dari 10 anggota sudah bayar · Periode 4 dari 10');
   i18n.setChoice('en');
 });
 
@@ -166,4 +172,35 @@ test('Follow system clears the profile language and the device key', () => {
   assert.equal(fresh.getChoice(), 'system');
   // No platform locale and no device languages in Node: English.
   assert.equal(fresh.getLocale(), 'en');
+});
+
+// The first-launch language sheet (app.js) shows only when the device has
+// no saved choice: nothing at all, or the legacy device-wide key, or a
+// profile whose language is present (null = an explicit Follow system).
+test('hasSavedChoice: false on a first launch, true for every saved shape', () => {
+  let fresh = freshI18n(memoryStorage());
+  assert.equal(fresh.hasSavedChoice(), false, 'nothing saved anywhere');
+  assert.equal(fresh.hasUrlLocale(), false);
+
+  fresh = freshI18n(memoryStorage());
+  fresh.setChoice('system'); // a choice this visit counts even if saving failed
+  assert.equal(fresh.hasSavedChoice(), true, 'setChoice marks the visit');
+
+  const storage = memoryStorage();
+  storage.setItem('turnly.lang', 'id'); // legacy device-wide preference only
+  fresh = freshI18n(storage);
+  assert.equal(fresh.hasSavedChoice(), true, 'the legacy key is a saved choice');
+
+  fresh = freshI18n(memoryStorage());
+  fresh.setChoice('system'); // writes { language: null } to the profile
+  const storage2 = memoryStorage();
+  storage2.setItem('turnly.user', JSON.stringify({ language: null }));
+  fresh = freshI18n(storage2);
+  assert.equal(fresh.hasSavedChoice(), true, 'an explicit null is a saved choice');
+});
+
+test('hasUrlLocale is true while a ?lang= link forces the language', () => {
+  // The pure resolver covers the resolution itself; here only the flag.
+  const fresh = freshI18n(memoryStorage());
+  assert.equal(fresh.hasUrlLocale(), false, 'no URL override in Node');
 });
