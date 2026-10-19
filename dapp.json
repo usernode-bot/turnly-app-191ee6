@@ -98,6 +98,23 @@
       "name": "Detail arisan via the hash route (workshop preview)",
       "path": "/index.html#/arisan/demo-kb",
       "expectSelector": "#lingkaran-giliran"
+    },
+    {
+      "name": "Detail arisan as admin shows the reminder row and the bulk bar",
+      "path": "/arisan/demo-kb?role=admin",
+      "expectText": "Remind 2 members",
+      "expectSelector": "#btn-bar"
+    },
+    {
+      "name": "Riwayat tab carries the Pengingat section",
+      "path": "/arisan/demo-kb?tab=history",
+      "expectText": "Reminders",
+      "expectSelector": "#pengingat-label"
+    },
+    {
+      "name": "Indonesian renders the Pengingat section",
+      "path": "/arisan/demo-kb?tab=history&lang=id",
+      "expectText": "Pengingat"
     }
   ],
   "icon": {

@@ -122,6 +122,18 @@ test('with nothing saved, the choice is system and the language is English', () 
   assert.equal(fresh.getLocale(), 'en', 'English stays the application default');
 });
 
+test('the picker shows the account language, not "system", once it is set', () => {
+  const storage = memoryStorage();
+  // The account language applied by user-profile.js / applyServerLanguage, and
+  // no device-wide key: the select must read that language, not "Follow system".
+  storage.setItem('turnly.user', JSON.stringify({ language: 'id' }));
+  const fresh = freshI18n(storage);
+  assert.equal(fresh.getEffectiveChoice(), 'id');
+  // "Follow system" (or nothing saved) still shows as system.
+  fresh.setChoice('system');
+  assert.equal(fresh.getEffectiveChoice(), 'system');
+});
+
 test('the profile language outranks the device-wide preference', () => {
   const storage = memoryStorage();
   storage.setItem('turnly.lang', 'en');

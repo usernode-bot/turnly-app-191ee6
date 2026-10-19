@@ -17,6 +17,7 @@
   var i18n = window.TurnlyI18n;
   var t = i18n.t;
   var demo = window.TurnlyDemoData;
+  var reminders = window.TurnlyReminders;
   var un = window.unNative || null;
 
   var HARI_INI = demo.DEMO_HARI_INI;
@@ -125,6 +126,69 @@
       }
     }
     rerender();
+  }
+
+  // ── Reminders: record one for a member in a round ────────────────────────
+  // The demo stand-in for the future API write, exactly like setIuranStatus:
+  // it appends to the in-memory reminders array the domain layer already reads
+  // and re-renders. The recorded moment is pinned to the start of the Jakarta
+  // day, so the calendar day it lands on is exactly "today" (what the cooldown
+  // and the relative timestamps read) on any device time zone, while a real
+  // clock still reads the row as "just now".
+  function awalHariJakarta() {
+    return new Date(d.tanggalJakarta() + 'T00:00:00+07:00');
+  }
+
+  // Records one reminder through the pure layer, which owns the cooldown gate.
+  // Returns the row, or null when the cooldown still holds.
+  function catatPengingat(arisan, anggota, dueId) {
+    return reminders.recordReminder(arisan, {
+      member_id: anggota.id,
+      due_id: dueId,
+      at: awalHariJakarta(),
+      today: HARI_INI,
+      created_by: PENGGUNA_ID,
+    });
+  }
+
+  // The per-row Ingatkan action. Returns the recorded anggota list.
+  function remind(arisan, anggota) {
+    var dueId = arisan.periode_aktif && arisan.periode_aktif.id;
+    if (!catatPengingat(arisan, anggota, dueId)) {
+      // The cooldown still holds (the row button is disabled in that state, so
+      // this is the defensive path): say why nothing was recorded.
+      announce(t('reminder.cooldown', { name: anggota.nama_tampil }));
+      return [];
+    }
+    rerender();
+    var pesan = t('reminder.sentToast', { name: anggota.nama_tampil });
+    announce(pesan);
+    toast(pesan);
+    return [anggota];
+  }
+
+  // The sticky bottom bar's bulk action: record one reminder for each member
+  // the queue says is due right now.
+  function remindSemua(arisan, anggotaIds) {
+    var dueId = arisan.periode_aktif && arisan.periode_aktif.id;
+    var tercatat = [];
+    anggotaIds.forEach(function (id) {
+      var anggota = d.anggotaDenganId(arisan, id);
+      if (anggota && catatPengingat(arisan, anggota, dueId)) tercatat.push(anggota);
+    });
+    if (!tercatat.length) return [];
+    rerender();
+    var pesan = t('reminder.bulkToast', { count: tercatat.length });
+    announce(pesan);
+    toast(pesan);
+    return tercatat;
+  }
+
+  // The ARIA live region the screens put state changes into, so a keyboard
+  // or screen-reader user hears which reminder was recorded.
+  function announce(message) {
+    var live = document.getElementById('pengingat-live');
+    if (live) live.textContent = message;
   }
 
   // ── Toast + copy ─────────────────────────────────────────────────────────
@@ -431,6 +495,15 @@
 
   var tampilan = null; // { nama: 'beranda' } or { nama: 'detail', arisan }
 
+  // A boot query parameter, so a demo or a check can land straight on a state
+  // that would otherwise need a click (the admin role switch; Detail reads
+  // ?tab=). Anything unrecognised is ignored and the default stands.
+  function paramUrl(nama) {
+    try {
+      return new URLSearchParams(window.location.search).get(nama);
+    } catch (e) { return null; }
+  }
+
   function route() {
     // Detail arisan via the real path, or via the hash — the hash form is
     // how the Quick revision workshop frames the screen on one static page
@@ -438,6 +511,8 @@
     var m = /^\/arisan\/([A-Za-z0-9-]+)\/?$/.exec(window.location.pathname)
       || /^#\/arisan\/([A-Za-z0-9-]+)/.exec(window.location.hash || '');
     var arisan = m && demo.arisan.filter(function (a) { return a.id === m[1]; })[0];
+    var peranAwal = paramUrl('role');
+    if (peranAwal === 'admin' || peranAwal === 'member') peran = peranAwal;
     tampilan = arisan ? { nama: 'detail', arisan: arisan } : { nama: 'beranda' };
     rerender();
   }
@@ -499,9 +574,11 @@
     salinRekening: salinRekening,
     bukaSheetBayar: bukaSheetBayar,
     bukaModalTolak: bukaModalTolak,
-    remind: function (anggota) {
-      toast(t('toast.reminderSent', { name: anggota.nama_tampil }));
-    },
+    reminders: reminders,
+    remind: remind,
+    remindSemua: remindSemua,
+    catatPengingat: catatPengingat,
+    announce: announce,
     getRole: getRole,
     setRole: setRole,
     rerender: rerender,

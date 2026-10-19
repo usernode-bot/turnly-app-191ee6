@@ -12,6 +12,7 @@
   var i18n = app.i18n;
   var t = i18n.t;
   var demo = app.demo;
+  var profile = window.TurnlyUserProfile;
 
   var HARI_INI = app.HARI_INI;
 
@@ -248,6 +249,12 @@
     });
   }
 
+  // The choice is kept on the device by i18n.setChoice; when signed in it is
+  // also written to the account (POST /api/me), once, without blocking the UI.
+  function syncBahasa() {
+    if (profile) profile.syncLanguageToAccount(profile.getLanguage());
+  }
+
   function render() {
     renderGreeting();
     renderHero();
@@ -281,6 +288,7 @@
     if (!btn) return;
     i18n.setChoice(btn.getAttribute('data-lang'));
     renderLanguage(); // the labels themselves, even if the locale did not change
+    syncBahasa();
   });
 
   window.TurnlyBeranda = { render: render };

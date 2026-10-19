@@ -239,8 +239,11 @@
   }
   function getChoice() { return effectiveChoice(); }
   // What the picker should show: the URL-forced language while it is in
-  // effect (the language actually in use), otherwise the saved choice.
-  function getEffectiveChoice() { return urlLocale || choice; }
+  // effect (the language actually in use), otherwise the saved choice. The
+  // profile language is that saved choice when it has one, so an account
+  // language applied on load (the server value winning) shows in the picker
+  // instead of leaving it on "Follow system".
+  function getEffectiveChoice() { return urlLocale || effectiveChoice(); }
 
   function setChoice(next) {
     if (CHOICES.indexOf(next) === -1) return;
@@ -295,6 +298,17 @@
     root.addEventListener('usernode:locale-changed', function (e) {
       setPlatformLocale(e && e.detail && e.detail.locale);
     });
+    // The account copy of the language wins on load: when the person is
+    // signed in and their account already holds one, it replaces the device
+    // choice. A guest, an offline load or an account with no language gets
+    // null back and the device layer stands.
+    if (profile && typeof profile.loadFromAccount === 'function') {
+      try {
+        Promise.resolve(profile.loadFromAccount()).then(function (lang) {
+          if (lang) applyLocale(resolveLocale(effectiveChoice(), urlLocale, platformLocale, deviceLanguages()));
+        }, function () {});
+      } catch (e) { /* no account to ask: the device choice stands */ }
+    }
   }
 
   return {

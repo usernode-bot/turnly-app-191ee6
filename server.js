@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
@@ -6,6 +7,12 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 3000;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// The platform tells every container which environment it runs in. This is
+// used only to seed obviously fake demo data and to accept a preview's
+// ?un-now= moment; it never changes which code path runs (see the platform
+// conventions, "Staging vs production").
+const IS_STAGING = process.env.USERNODE_ENV === 'staging';
 
 // The platform signs user-identity tokens with an RSA private key it never
 // shares. Containers get only the PUBLIC half, so this app can verify who a
@@ -32,12 +39,62 @@ const GUEST_AUDIENCE = APP_AUDIENCE ? APP_AUDIENCE + ':guest' : null;
 const GUEST_PUBLIC_KEY = (process.env.USERNODE_GUEST_JWT_PUBLIC_KEY || '')
   .replace(/\\n/g, '\n');
 
-// Paths that stay open without authentication. Add a path here (and add it
-// with `app.get`/`app.post` below) if you deliberately want it public.
-// Everything else requires a valid platform-issued JWT.
-const PUBLIC_API_PATHS = new Set(['/health']);
+// Which API requests stay open without authentication lives in api-access.js
+// so it can be unit-tested (see tests/api-access.test.js). GET /api/me is
+// deliberately an open READ: the revision workshop's preview frames load
+// /index.html same-origin with no identity token, and a gated read would 401
+// in each — a console error, which fails the workshop's "no console errors"
+// check. It is safe because the route only ever reports the caller
+// ({ authenticated: false } without a token). The write, POST /api/me, is not
+// listed and keeps requiring an account.
+const { isPublicApiRequest } = require('./api-access');
 
 app.use(express.json());
+
+// Apply db/schema.sql on boot, idempotently: CREATE TABLE IF NOT EXISTS /
+// ADD COLUMN IF NOT EXISTS, so repeated deploys are safe. Only the columns a
+// reader needs are pinned here; the CREATE TABLEs are skipped when the table
+// already exists, so a hand-migrated database is left alone.
+async function applySchema() {
+  const sql = fs.readFileSync(path.join(__dirname, 'db', 'schema.sql'), 'utf8');
+  await pool.query(sql);
+  // Grammar-level safety net for a users table made before this column
+  // existed (a no-op when the CREATE TABLE above already added it).
+  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'en'");
+}
+
+// Staging starts from a copy of production, so tables this change creates are
+// empty and the Staging demo user does not exist. Seed the few rows a
+// testing step needs, with fixed ids and ON CONFLICT DO NOTHING so a reload
+// changes nothing. In production this block never runs.
+async function seedStaging() {
+  if (!IS_STAGING) return;
+  await pool.query(`
+    INSERT INTO users (id, username) VALUES (900001, 'Staging demo admin')
+    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO arisan (id, nama, nominal, periode, rekening_kas, total_periode, status, admin_id)
+    VALUES ('demo-staging-reminder', 'Staging demo arisan', 100000, 'bulanan',
+            'BCA 0000000000 a.n. Staging demo', 3, 'berjalan', 'demo-staging-arm1')
+    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO anggota_arisan (id, arisan_id, nama_tampil, nomor_hp, urutan_giliran, peran)
+    VALUES ('demo-staging-arm1', 'demo-staging-reminder', 'Staging demo admin', '0800000000', 1, 'admin')
+    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO reminders (arisan_id, due_id, member_id, channel, sent_at, status, message_key)
+    SELECT 'demo-staging-reminder', NULL, 'demo-staging-arm1', 'app', now(), 'sent', 'reminder.sentLine'
+    WHERE NOT EXISTS (
+      SELECT 1 FROM reminders WHERE arisan_id = 'demo-staging-reminder' AND member_id = 'demo-staging-arm1'
+    );
+  `);
+}
+
+let schemaReady = Promise.resolve();
+function startSchema() {
+  schemaReady = applySchema()
+    .then(seedStaging)
+    .then(() => console.log(`schema applied${IS_STAGING ? ' (staging seed included)' : ''}`))
+    .catch((err) => console.error('schema apply failed: ' + err.message));
+}
+startSchema();
 
 // The platform's three centrally hosted files — the bridge, the native UI
 // kit and the Tailwind runtime — are reachable at these paths on this app's
@@ -118,7 +175,7 @@ app.use((req, res, next) => {
   // `/api/*` included, so read routes must not assume req.user (use
   // `req.user ? req.user.id : null`). Every write needs an account.
   if (req.method !== 'GET' || req.path.startsWith('/api/')) {
-    if (PUBLIC_API_PATHS.has(req.path)) return next();
+    if (isPublicApiRequest(req.method, req.path, !!req.user)) return next();
     if (!req.user && req.guest) {
       if (req.method === 'GET' || req.method === 'HEAD') return next();
       return res.status(401).json({ error: 'account_required' });
@@ -130,10 +187,52 @@ app.use((req, res, next) => {
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-// Who the caller is signed in as. Read-only: only the username the auth
-// middleware already verified goes out, guests get null, and a request with
-// no valid token still gets the 401 above.
-app.get('/api/me', (req, res) => res.json({ username: req.user ? req.user.username : null }));
+// ── The account copy of the language ──────────────────────────────────────
+// public/js/user-profile.js keeps the language choice on the device
+// ('turnly.user'); when the app is signed in it ALSO keeps it on the account
+// here (users.language), so the choice follows the person to another device.
+// GET answers who is signed in and what the account already holds: the server
+// value wins on load, applied by public/js/i18n.js. POST writes it. A guest,
+// or an account with no language yet, gets null and the device copy stands.
+const LANGUAGES = new Set(['en', 'id']);
+
+app.get('/api/me', async (req, res) => {
+  // An open READ by design (see api-access.js): a caller without a verified
+  // platform token gets only this, never a real person's language.
+  if (!req.user) return res.json({ authenticated: false, username: null, language: null });
+  try {
+    await schemaReady;
+    const { rows } = await pool.query('SELECT language FROM users WHERE id = $1', [req.user.id]);
+    return res.json({ authenticated: true, username: req.user.username || null, language: rows[0] ? rows[0].language : null });
+  } catch (err) {
+    console.error('/api/me read failed: ' + err.message);
+    return res.json({ authenticated: true, username: req.user.username || null, language: null });
+  }
+});
+
+app.post('/api/me', async (req, res) => {
+  const language = req.body && req.body.language;
+  if (!LANGUAGES.has(language)) {
+    return res.status(400).json({ error: 'Unsupported language' });
+  }
+  // A write without an account was already answered by the auth middleware
+  // (guests get account_required); this is the belt to that braces.
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    await schemaReady;
+    await pool.query(
+      `INSERT INTO users (id, username, language) VALUES ($1, $2, $3)
+       ON CONFLICT (id) DO UPDATE SET language = EXCLUDED.language`,
+      [req.user.id, req.user.username || null, language]
+    );
+    return res.json({ language });
+  } catch (err) {
+    // The device copy still holds the choice; say so honestly rather than
+    // pretending the account was written.
+    console.error('/api/me write failed: ' + err.message);
+    return res.status(503).json({ error: 'Language not saved' });
+  }
+});
 
 // The template ships no favicon file; index.html carries an inline SVG
 // icon instead. Answer 204 here so anything that still probes
