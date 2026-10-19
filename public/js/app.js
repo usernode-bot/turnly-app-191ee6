@@ -527,6 +527,9 @@
   }
 
   function rerender() {
+    // A reading is tied to what is on screen: a language change (via
+    // i18n.onChange below), a payment, or a route to Detail ends it.
+    if (window.TurnlySpeech) window.TurnlySpeech.stop();
     if (!tampilan) return;
     document.title = t('app.name');
     var berandaView = document.getElementById('beranda-view');
@@ -543,6 +546,12 @@
   }
 
   i18n.onChange(rerender);
+
+  // Leaving the page stops the reading too, so the voice never outlives
+  // the screen that started it.
+  window.addEventListener('pagehide', function () {
+    if (window.TurnlySpeech) window.TurnlySpeech.stop();
+  });
 
   window.TurnlyApp = {
     HARI_INI: HARI_INI,

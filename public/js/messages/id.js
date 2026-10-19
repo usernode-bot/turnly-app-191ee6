@@ -38,6 +38,16 @@
     'groups.yourTurnPassed': 'Giliran Anda sudah lewat: Periode {round}',
     'groups.recipientNow': 'Penerima periode ini: {name}',
 
+    // Bacakan pada blok iuran Beranda: kalimat utuh yang dibacakan suara
+    // peramban. Nominal masuk sebagai angka polos agar suaranya terbaca.
+    'read.start': 'Bacakan',
+    'read.stop': 'Hentikan',
+    'read.dueIn': 'Iuran Anda untuk {name} sebesar {amount} rupiah, jatuh tempo {date}, {days} hari lagi.',
+    'read.dueToday': 'Iuran Anda untuk {name} sebesar {amount} rupiah, jatuh tempo hari ini.',
+    'read.late': 'Iuran Anda untuk {name} sebesar {amount} rupiah. Jatuh tempo {date}, sudah telat {days} hari.',
+    'read.recipient': 'Penerima periode ini: {name}.',
+    'read.recipientYou': 'Periode ini, Anda yang menerima dana.',
+
     // Detail arisan: lingkaran giliran dan sekelilingnya
     'detail.turnOf': 'Giliran {round} dari {rounds}',
     'detail.collected': 'Terkumpul {collected} dari {total}',

@@ -50,6 +50,17 @@
     'groups.yourTurnPassed': 'Your turn was Round {round}',
     'groups.recipientNow': 'Recipient this round: {name}',
 
+    // Read aloud (Bacakan) on the Home contribution block: whole sentences
+    // the browser's voice speaks. The amount arrives as plain digits, so
+    // the voice reads it as a number.
+    'read.start': 'Read aloud',
+    'read.stop': 'Stop reading',
+    'read.dueIn': 'Your contribution for {name} is {amount} rupiah, due {date}, {days, plural, one{in 1 day} other{in # days}}.',
+    'read.dueToday': 'Your contribution for {name} is {amount} rupiah, due today.',
+    'read.late': 'Your contribution for {name} is {amount} rupiah. It was due {date} and is {days, plural, one{1 day} other{# days}} late.',
+    'read.recipient': "This round's recipient is {name}.",
+    'read.recipientYou': 'This round, you receive the payout.',
+
     // Detail arisan: the turn circle and its surroundings
     'detail.turnOf': 'Turn {round} of {rounds}',
     'detail.collected': 'Collected {collected} of {total}',
