@@ -34,6 +34,18 @@
       "expectText": "Good"
     },
     {
+      "name": "Read aloud button sits under Pay now on Home",
+      "path": "/",
+      "expectSelector": "#btn-bacakan",
+      "expectText": "Read aloud"
+    },
+    {
+      "name": "Read aloud renders in Indonesian",
+      "path": "/?lang=id",
+      "expectSelector": "#btn-bacakan",
+      "expectText": "Bacakan"
+    },
+    {
       "name": "Turn circle centre text (English default)",
       "path": "/arisan/demo-kb",
       "expectText": "Turn 4 of 10"
