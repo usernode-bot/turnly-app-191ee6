@@ -200,7 +200,12 @@
     });
   }
 
-  // ── History tab: finished rounds with the payout handed over ──────────────
+  // ── History tab: finished rounds, each opening to its payments ────────────
+  // Which rounds are open, by periode id. In memory only, so the open state
+  // survives a rerender (role or language change) and tab switches but not
+  // a reload.
+  var riwayatTerbuka = {};
+
   function renderPanelHistory(arisan) {
     var ul = document.getElementById('daftar-riwayat');
     var kosong = document.getElementById('riwayat-kosong');
@@ -214,10 +219,20 @@
       return;
     }
 
+    var chevronAsli = document.getElementById('ikon-chevron').content.firstElementChild;
+
     lalu.forEach(function (periode) {
       var penerimaLalu = d.anggotaDenganId(arisan, periode.penerima_anggota_id);
-      var li = app.el('li', 'list-row justify-between');
-      var kiri = app.el('div', 'min-w-0');
+      var terbuka = !!riwayatTerbuka[periode.id];
+      var li = app.el('li');
+      var tombol = app.el('button', 'list-row w-full justify-between text-left '
+        + 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus '
+        + 'focus-visible:ring-offset-2 focus-visible:ring-offset-ground');
+      tombol.type = 'button';
+      tombol.setAttribute('aria-expanded', terbuka ? 'true' : 'false');
+      tombol.setAttribute('aria-controls', 'riwayat-bayar-' + periode.id);
+
+      var kiri = app.el('div', 'min-w-0 flex-1');
       kiri.appendChild(app.el('p', 'truncate text-body font-medium', t('history.round', {
         round: periode.nomor,
         date: d.formatTanggalPendek(periode.tanggal_jatuh_tempo, i18n.getLocale()),
@@ -227,8 +242,51 @@
           name: penerimaLalu.nama_tampil,
         })));
       }
-      li.appendChild(kiri);
-      li.appendChild(app.el('span', 'chip chip-dana shrink-0', t('history.paidOut')));
+      var petunjuk = app.el('span', 'mt-0.5 flex items-center gap-1 text-small text-muted');
+      var chevron = chevronAsli.cloneNode(true);
+      chevron.classList.toggle('rotate-180', terbuka);
+      petunjuk.appendChild(chevron);
+      petunjuk.appendChild(app.el('span', '', terbuka
+        ? t('history.hidePayments')
+        : t('history.showPayments')));
+      kiri.appendChild(petunjuk);
+      tombol.appendChild(kiri);
+      tombol.appendChild(app.el('span', 'chip chip-dana shrink-0', t('history.paidOut')));
+
+      tombol.addEventListener('click', function () {
+        riwayatTerbuka[periode.id] = !terbuka;
+        renderPanelHistory(arisanKini);
+        // The rerender replaces the button; keep keyboard focus on the same
+        // round's toggle so a reader does not lose their place.
+        var lagi = document.querySelector(
+          'button[aria-controls="riwayat-bayar-' + periode.id + '"]'
+        );
+        if (lagi) lagi.focus();
+      });
+      li.appendChild(tombol);
+
+      if (terbuka) {
+        var daftar = app.el('ul', 'divide-y divide-line border-t border-line bg-ground');
+        daftar.id = 'riwayat-bayar-' + periode.id;
+        daftar.setAttribute('aria-label', t('history.paymentsLabel', { round: periode.nomor }));
+        d.pembayaranPeriode(arisan, periode, HARI_INI).forEach(function (bayar) {
+          var anggota = bayar.anggota;
+          var baris = app.el('li', 'list-row');
+          baris.appendChild(app.avatarEl(anggota.nama_tampil, bayar.status, { mini: true }));
+          var tengah = app.el('div', 'min-w-0 flex-1');
+          var namaBaris = app.el('div', 'flex min-w-0 flex-wrap items-center gap-1.5');
+          namaBaris.appendChild(app.el('p', 'truncate text-body font-medium', anggota.nama_tampil));
+          if (anggota.user_id === PENGGUNA_ID) namaBaris.appendChild(app.tagEl(t('tag.you')));
+          if (anggota.id === arisan.admin_id) namaBaris.appendChild(app.tagEl(t('tag.admin')));
+          tengah.appendChild(namaBaris);
+          tengah.appendChild(app.el('p', 'text-small text-muted', d.formatRupiah(arisan.nominal)));
+          baris.appendChild(tengah);
+          baris.appendChild(app.chipEl(bayar.status));
+          daftar.appendChild(baris);
+        });
+        li.appendChild(daftar);
+      }
+
       ul.appendChild(li);
     });
   }

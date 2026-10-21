@@ -153,6 +153,71 @@ test('anggotaBerikutnyaBayar picks the first unpaid member in turn order', () =>
   assert.equal(d.anggotaBerikutnyaBayar({ ...arisan, periode_aktif: null }, '2026-10-05'), null);
 });
 
+test('pembayaranPeriode lists every member in turn order for one round', () => {
+  const periode = { id: 'p1', tanggal_jatuh_tempo: '2026-09-01' };
+  // Array order deliberately differs from turn order.
+  const arisan = {
+    anggota: [
+      { id: 'b', urutan_giliran: 2 },
+      { id: 'a', urutan_giliran: 1 },
+      { id: 'c', urutan_giliran: 3 },
+      { id: 'd', urutan_giliran: 4 },
+    ],
+    iuran: [
+      { anggota_id: 'a', periode_id: 'p1', status: 'lunas' },
+      { anggota_id: 'b', periode_id: 'p1', status: 'menunggu' },
+      { anggota_id: 'c', periode_id: 'p1', status: 'ditolak' },
+      { anggota_id: 'a', periode_id: 'p2', status: 'lunas' }, // another round
+      { anggota_id: 'd', periode_id: 'p2', status: 'lunas' }, // another round
+    ],
+  };
+
+  const hasil = d.pembayaranPeriode(arisan, periode, '2026-09-10');
+  assert.deepEqual(hasil.map((r) => r.anggota.id), ['a', 'b', 'c', 'd']);
+  assert.deepEqual(hasil[0].status, { key: 'lunas', telatHari: 0 });
+  assert.equal(hasil[0].iuran.periode_id, 'p1');
+  assert.deepEqual(hasil[1].status, { key: 'menunggu', telatHari: 0 });
+  // A rejected row presents as unpaid, past its due date: late.
+  assert.equal(hasil[2].iuran.status, 'ditolak');
+  assert.deepEqual(hasil[2].status, { key: 'telat', telatHari: 9 });
+  // No row for this round at all: null iuran, unpaid before the due date.
+  assert.equal(hasil[3].iuran, null);
+  assert.deepEqual(
+    d.pembayaranPeriode(arisan, periode, '2026-08-30')[3].status,
+    { key: 'belum', telatHari: 0 },
+  );
+
+  // Without a periode there is nothing to list.
+  assert.deepEqual(d.pembayaranPeriode(arisan, null, '2026-09-10'), []);
+});
+
+test('the demo payment history tells the same story on the anchor day', () => {
+  const data = demo.build('2026-10-05');
+  const [kb, k3] = data.arisan;
+  const rowsFor = (arisan, nomor) => d.pembayaranPeriode(
+    arisan,
+    arisan.periode_lalu.filter((p) => p.nomor === nomor)[0],
+    '2026-10-05',
+  );
+
+  for (const nomor of [1, 2]) {
+    const rows = rowsFor(kb, nomor);
+    assert.equal(rows.length, kb.anggota.length);
+    assert.ok(rows.every((r) => r.status.key === 'lunas'), 'everyone paid in round ' + nomor);
+  }
+
+  const ketiga = rowsFor(kb, 3);
+  assert.equal(ketiga.length, kb.anggota.length);
+  assert.equal(ketiga.filter((r) => r.status.key === 'lunas').length, 9);
+  const joko = ketiga.filter((r) => r.anggota.id === 'demo-kb-a9')[0];
+  assert.equal(joko.iuran.status, 'belum');
+  assert.deepEqual(joko.status, { key: 'telat', telatHari: 28 });
+
+  const k3Pertama = rowsFor(k3, 1);
+  assert.equal(k3Pertama.length, k3.anggota.length);
+  assert.ok(k3Pertama.every((r) => r.status.key === 'lunas'));
+});
+
 test('anggotaBerikutnyaBayar follows the demo story on the anchor day', () => {
   const data = demo.build('2026-10-05');
   const [kb, k3] = data.arisan;

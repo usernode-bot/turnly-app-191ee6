@@ -111,6 +111,26 @@ function struktural(data) {
       assert.ok(Object.values(d.PERIODE_STATUS).includes(p.status),
         arisan.nama + ' periode ' + p.nomor + ' has an unknown status');
     }
+
+    // Every finished round has exactly one payment row per member, and the
+    // rows name the active or a finished round. Ids are unique.
+    const periodeIds = new Set([arisan.periode_aktif.id, ...arisan.periode_lalu.map((p) => p.id)]);
+    const iuranIds = new Set();
+    for (const row of arisan.iuran) {
+      assert.ok(!iuranIds.has(row.id), arisan.nama + ' repeats iuran id ' + row.id);
+      iuranIds.add(row.id);
+      assert.ok(periodeIds.has(row.periode_id),
+        arisan.nama + ' iuran names an unknown periode ' + row.periode_id);
+    }
+    for (const p of arisan.periode_lalu) {
+      for (const anggotaId of ids) {
+        const count = arisan.iuran.filter(
+          (r) => r.periode_id === p.id && r.anggota_id === anggotaId,
+        ).length;
+        assert.equal(count, 1,
+          arisan.nama + ' round ' + p.nomor + ' needs one row for ' + anggotaId);
+      }
+    }
   }
 }
 
@@ -119,6 +139,14 @@ test('every generated dataset has well-formed past periodes for the History tab'
     struktural(demo.build(anchor));
   }
   struktural({ arisan: demo.arisan }); // the page-load instance too
+});
+
+test('the active round still counts 7 paid (KB) and 5 paid (K3)', () => {
+  for (const anchor of [ANCHOR, '2026-01-01', '2024-02-29']) {
+    const data = demo.build(anchor);
+    assert.equal(d.hitungLunas(data.arisan[0]), 7);
+    assert.equal(d.hitungLunas(data.arisan[1]), 5);
+  }
 });
 
 test('the turn circle data has a recipient in the active round', () => {

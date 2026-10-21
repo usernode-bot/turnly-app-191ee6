@@ -139,6 +139,30 @@
     });
   }
 
+  // Every member's payment in ONE round, in turn order: the iuran row for
+  // that periode (null when the member has none) and how it presents on
+  // hariIni, through the same status rules as the current round. Used by
+  // the History tab to read who paid in a finished round. [] without a
+  // periode. Pure: no DOM access.
+  function pembayaranPeriode(arisan, periode, hariIni) {
+    if (!periode) return [];
+    var rows = arisan.iuran || [];
+    return anggotaUrut(arisan).map(function (anggota) {
+      var iuran = null;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].periode_id === periode.id && rows[i].anggota_id === anggota.id) {
+          iuran = rows[i];
+          break;
+        }
+      }
+      return {
+        anggota: anggota,
+        iuran: iuran,
+        status: statusIuranTampil(iuran, periode, hariIni),
+      };
+    });
+  }
+
   // The member the organizer should chase first this round: the first
   // anggota in turn order whose contribution still presents as 'belum' or
   // 'telat'. A missing iuran row and a rejected ('ditolak') row both
@@ -237,6 +261,7 @@
     formatTanggalPendek: formatTanggalPendek,
     statusIuranTampil: statusIuranTampil,
     iuranUntukAnggota: iuranUntukAnggota,
+    pembayaranPeriode: pembayaranPeriode,
     anggotaUrut: anggotaUrut,
     anggotaBerikutnyaBayar: anggotaBerikutnyaBayar,
     anggotaDenganId: anggotaDenganId,

@@ -65,6 +65,9 @@
     'history.round': 'Periode {round} · {date}',
     'history.recipient': 'Penerima: {name}',
     'history.paidOut': 'Dana diserahkan',
+    'history.showPayments': 'Lihat pembayaran',
+    'history.hidePayments': 'Tutup pembayaran',
+    'history.paymentsLabel': 'Pembayaran periode {round}',
     'history.empty': 'Belum ada periode selesai. Penyerahan dana pertama muncul di sini.',
 
     'action.confirm': 'Konfirmasi',

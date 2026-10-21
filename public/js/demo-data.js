@@ -49,11 +49,35 @@
       };
     }
 
+    // A payment row for a FINISHED round: the same fields as the active
+    // rows, so the history mirrors the planned iuran table. Ids carry the
+    // round number so they stay unique across the arisan.
+    function iuranLalu(arisanId, periodeNomor, anggotaNomor, status) {
+      return {
+        id: arisanId + '-p' + periodeNomor + '-i' + anggotaNomor,
+        periode_id: arisanId + '-periode-' + periodeNomor,
+        anggota_id: arisanId + '-a' + anggotaNomor,
+        status: status,
+      };
+    }
+
+    // One row per member for a finished round: everybody paid (lunas)
+    // except the member numbers listed in `belum`.
+    function iuranLaluSemua(arisanId, periodeNomor, jumlahAnggota, belum) {
+      var rows = [];
+      for (var n = 1; n <= jumlahAnggota; n++) {
+        rows.push(iuranLalu(arisanId, periodeNomor, n,
+          (belum || []).indexOf(n) === -1 ? 'lunas' : 'belum'));
+      }
+      return rows;
+    }
+
     // ── Arisan Keluarga Besar ──────────────────────────────────────────────
     // Rp500.000 per bulan, jatuh tempo tiap tanggal 7. Periode 4 dari 10,
     // penerima Bu Sari. 7 lunas, Pak Hendra menunggu konfirmasi, Bu Rina
     // dan Pak Joko belum bayar. Rounds land on 30-day steps back from the
-    // active due date (+2 days from the anchor).
+    // active due date (+2 days from the anchor). In the finished rounds,
+    // everyone paid in rounds 1 and 2; in round 3 only Pak Joko did not.
     var keluargaBesar = {
       id: 'demo-kb',
       nama: 'Arisan Keluarga Besar',
@@ -123,13 +147,18 @@
         iuran('demo-kb', 8, 'demo-kb-a8', 'lunas'),
         iuran('demo-kb', 9, 'demo-kb-a9', 'belum'), // Pak Joko
         iuran('demo-kb', 10, 'demo-kb-a10', 'lunas'),
-      ],
+      ].concat(
+        iuranLaluSemua('demo-kb', 1, 10), // everyone paid
+        iuranLaluSemua('demo-kb', 2, 10), // everyone paid
+        iuranLaluSemua('demo-kb', 3, 10, [9]) // only Pak Joko did not
+      ),
     };
 
     // ── Arisan Kantor Lantai 3 ─────────────────────────────────────────────
     // Rp100.000 per minggu, jatuh tempo tiap Jumat. Periode 2 dari 6,
     // penerima Mba Tika. Lima lunas, Mba Putri telat 3 hari (jatuh tempo
-    // 3 hari sebelum hari anchor). Rounds land a week apart.
+    // 3 hari sebelum hari anchor). Rounds land a week apart. Everyone paid
+    // in the one finished round.
     var kantorLantai3 = {
       id: 'demo-k3',
       nama: 'Arisan Kantor Lantai 3',
@@ -174,7 +203,7 @@
         iuran('demo-k3', 4, 'demo-k3-a4', 'lunas'),
         iuran('demo-k3', 5, 'demo-k3-a5', 'lunas'),
         iuran('demo-k3', 6, 'demo-k3-a6', 'belum'), // Mba Putri -> telat 3 hari
-      ],
+      ].concat(iuranLaluSemua('demo-k3', 1, 6)), // everyone paid
     };
 
     return { arisan: [keluargaBesar, kantorLantai3] };
