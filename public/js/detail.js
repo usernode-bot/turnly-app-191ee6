@@ -201,6 +201,27 @@
   }
 
   // ── History tab: finished rounds with the payout handed over ──────────────
+  // Each round opens to show every member's payment for it. Which rounds are
+  // open lives in memory (by periode id), so it survives a re-render and a
+  // tab switch, and starts closed again on reload.
+  var riwayatTerbuka = {};
+
+  // One member's row in an open round: who they are and whether they paid.
+  function barisPembayaran(arisan, baris) {
+    var li = app.el('li', 'list-row');
+    li.appendChild(app.avatarEl(baris.anggota.nama_tampil, baris.status, { mini: true }));
+    var kolom = app.el('div', 'min-w-0 flex-1');
+    var namaBaris = app.el('div', 'flex min-w-0 flex-wrap items-center gap-1.5');
+    namaBaris.appendChild(app.el('p', 'truncate text-body font-medium', baris.anggota.nama_tampil));
+    if (baris.anggota.user_id === PENGGUNA_ID) namaBaris.appendChild(app.tagEl(t('tag.you')));
+    if (baris.anggota.id === arisan.admin_id) namaBaris.appendChild(app.tagEl(t('tag.admin')));
+    kolom.appendChild(namaBaris);
+    kolom.appendChild(app.el('p', 'text-small text-muted', d.formatRupiah(arisan.nominal)));
+    li.appendChild(kolom);
+    li.appendChild(app.chipEl(baris.status));
+    return li;
+  }
+
   function renderPanelHistory(arisan) {
     var ul = document.getElementById('daftar-riwayat');
     var kosong = document.getElementById('riwayat-kosong');
@@ -216,7 +237,15 @@
 
     lalu.forEach(function (periode) {
       var penerimaLalu = d.anggotaDenganId(arisan, periode.penerima_anggota_id);
-      var li = app.el('li', 'list-row justify-between');
+      var terbuka = !!riwayatTerbuka[periode.id];
+      var li = app.el('li');
+
+      var tombol = app.el('button', 'list-row w-full justify-between text-left'
+        + ' focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset');
+      tombol.type = 'button';
+      tombol.setAttribute('aria-expanded', terbuka ? 'true' : 'false');
+      tombol.setAttribute('aria-controls', 'riwayat-bayar-' + periode.id);
+
       var kiri = app.el('div', 'min-w-0');
       kiri.appendChild(app.el('p', 'truncate text-body font-medium', t('history.round', {
         round: periode.nomor,
@@ -227,8 +256,30 @@
           name: penerimaLalu.nama_tampil,
         })));
       }
-      li.appendChild(kiri);
-      li.appendChild(app.el('span', 'chip chip-dana shrink-0', t('history.paidOut')));
+      var petunjuk = app.el('span', 'mt-0.5 flex items-center gap-1 text-small text-muted');
+      var ikon = document.getElementById('ikon-chevron').content.firstElementChild.cloneNode(true);
+      if (terbuka) ikon.classList.add('rotate-180');
+      petunjuk.appendChild(ikon);
+      petunjuk.appendChild(app.el('span', '', terbuka ? t('history.hidePayments') : t('history.showPayments')));
+      kiri.appendChild(petunjuk);
+
+      tombol.appendChild(kiri);
+      tombol.appendChild(app.el('span', 'chip chip-dana shrink-0', t('history.paidOut')));
+      tombol.addEventListener('click', function () {
+        riwayatTerbuka[periode.id] = !riwayatTerbuka[periode.id];
+        renderPanelHistory(arisanKini);
+      });
+      li.appendChild(tombol);
+
+      if (terbuka) {
+        var daftar = app.el('ul', 'divide-y divide-line border-t border-line bg-ground');
+        daftar.id = 'riwayat-bayar-' + periode.id;
+        daftar.setAttribute('aria-label', t('history.paymentsLabel', { round: periode.nomor }));
+        d.pembayaranPeriode(arisan, periode, HARI_INI).forEach(function (baris) {
+          daftar.appendChild(barisPembayaran(arisan, baris));
+        });
+        li.appendChild(daftar);
+      }
       ul.appendChild(li);
     });
   }

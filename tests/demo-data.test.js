@@ -111,8 +111,36 @@ function struktural(data) {
       assert.ok(Object.values(d.PERIODE_STATUS).includes(p.status),
         arisan.nama + ' periode ' + p.nomor + ' has an unknown status');
     }
+
+    // Payments: one row per member per finished round, every row naming a
+    // member and a real round, and no id shared with another row.
+    const iuranIds = new Set();
+    const periodeIds = new Set([arisan.periode_aktif.id, ...arisan.periode_lalu.map((p) => p.id)]);
+    for (const r of arisan.iuran) {
+      assert.ok(!iuranIds.has(r.id), arisan.nama + ' has a duplicate iuran id ' + r.id);
+      iuranIds.add(r.id);
+      assert.ok(ids.has(r.anggota_id), arisan.nama + ' iuran names a missing member');
+      assert.ok(periodeIds.has(r.periode_id), arisan.nama + ' iuran names a missing periode');
+      assert.ok(Object.values(d.IURAN_STATUS).includes(r.status),
+        arisan.nama + ' iuran ' + r.id + ' has an unknown status');
+    }
+    for (const p of arisan.periode_lalu) {
+      const rows = arisan.iuran.filter((r) => r.periode_id === p.id);
+      assert.equal(rows.length, arisan.anggota.length,
+        arisan.nama + ' periode ' + p.nomor + ' does not have one payment per member');
+      assert.equal(new Set(rows.map((r) => r.anggota_id)).size, arisan.anggota.length,
+        arisan.nama + ' periode ' + p.nomor + ' pays a member twice');
+    }
   }
 }
+
+test('the past-round payments do not change the active round', () => {
+  for (const anchor of [ANCHOR, '2026-01-01', '2024-02-29']) {
+    const [kb, k3] = demo.build(anchor).arisan;
+    assert.equal(d.hitungLunas(kb), 7, 'Keluarga Besar active round');
+    assert.equal(d.hitungLunas(k3), 5, 'Kantor Lantai 3 active round');
+  }
+});
 
 test('every generated dataset has well-formed past periodes for the History tab', () => {
   for (const anchor of [ANCHOR, '2026-01-01', '2024-02-29']) {

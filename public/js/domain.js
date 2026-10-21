@@ -217,6 +217,24 @@
     }).format(new Date(instant));
   }
 
+  // A finished periode's payments, in turn order: every member of the
+  // arisan with that periode's iuran row (or null when they have none) and
+  // how it presents now. Read-only; used by the History tab.
+  function pembayaranPeriode(arisan, periode, hariIni) {
+    if (!periode) return [];
+    var rows = arisan.iuran || [];
+    return anggotaUrut(arisan).map(function (a) {
+      var iuran = null;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].periode_id === periode.id && rows[i].anggota_id === a.id) {
+          iuran = rows[i];
+          break;
+        }
+      }
+      return { anggota: a, iuran: iuran, status: statusIuranTampil(iuran, periode, hariIni) };
+    });
+  }
+
   // The periode's recipient anggota.
   function penerimaPeriode(arisan) {
     if (!arisan.periode_aktif) return null;
@@ -242,6 +260,7 @@
     anggotaDenganId: anggotaDenganId,
     hitungLunas: hitungLunas,
     totalTerkumpul: totalTerkumpul,
+    pembayaranPeriode: pembayaranPeriode,
     penerimaPeriode: penerimaPeriode,
     inisialGrup: inisialGrup,
     giliranPengguna: giliranPengguna,

@@ -211,6 +211,11 @@
           </div>
           <div id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
             <ul id="daftar-riwayat" class="list"></ul>
+            <!-- The "Show payments" chevron on each finished round; cloned
+                 and rotated by detail.js when the round is open. -->
+            <template id="ikon-chevron">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </template>
             <div id="riwayat-kosong" class="state-empty" hidden>
               <p id="riwayat-kosong-teks" class="text-small text-muted"></p>
             </div>
