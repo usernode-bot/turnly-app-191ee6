@@ -149,7 +149,7 @@
       <!-- The owner's Quick revision workshop (public/revisi.html): the one
            quiet way in from the member screens. Filled by beranda.js. -->
       <p class="text-center">
-        <a id="link-revisi" href="/revisi.html" class="text-small text-muted underline"></a>
+        <a id="link-revisi" href="/revisi.html" class="inline-flex min-h-11 items-center px-3 text-small text-muted underline"></a>
       </p>
     </div>
 
@@ -211,6 +211,11 @@
           </div>
           <div id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
             <ul id="daftar-riwayat" class="list"></ul>
+            <!-- The "Show payments" chevron on each finished round; cloned
+                 and rotated by detail.js when the round is open. -->
+            <template id="ikon-chevron">
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </template>
             <div id="riwayat-kosong" class="state-empty" hidden>
               <p id="riwayat-kosong-teks" class="text-small text-muted"></p>
             </div>
@@ -257,7 +262,7 @@
        sheet, built the same way as the pay sheet above. Shown once by
        app.js when this device has no saved language yet. -->
   <template id="tpl-sheet-bahasa">
-    <div class="flex flex-col gap-4 px-5 pb-6 pt-2">
+    <div class="mx-auto flex w-full max-w-[480px] flex-col gap-4 px-5 pb-6 pt-2">
       <h2 id="bahasa-judul" class="font-display text-heading"></h2>
       <p id="bahasa-hint" class="text-body text-muted"></p>
       <button class="btn-secondary w-full" data-lang="en"></button>

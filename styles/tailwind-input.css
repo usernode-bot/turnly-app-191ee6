@@ -180,10 +180,10 @@
     @apply rounded-xl border border-line bg-surface p-4;
   }
 
-  /* The hero payment block: indigo (dark look: lighter navy), with the
-     app's signature asymmetric corners — three large, one small. */
+  /* The hero payment block: indigo (dark look: lighter navy), all four
+     corners the same radius. */
   .hero {
-    @apply rounded-[24px] rounded-br-[6px] bg-hero p-5 text-hero-fg;
+    @apply rounded-[24px] bg-hero p-5 text-hero-fg;
   }
 
   /* The label above a section: sentence case, never uppercase or tracked. */

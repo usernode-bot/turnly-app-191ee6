@@ -123,8 +123,7 @@ chips are fully rounded and ALWAYS carry the status word; the four avatar
 states differ by fill/border treatment, never colour alone (filled green /
 dashed ochre outline / solid grey-blue outline / pink fill with red
 outline). Lists are rows separated by thin lines, not stacks of cards. The
-hero payment block has three large corners and one small one
-(`24px 24px 24px 6px`).
+hero payment block has the same 24px radius on all four corners.
 Re-theme by changing the token values there, keeping every text pair at
 4.5:1 or more in both looks. Bottom sheet and toast come from the
 platform's `usernode-native` kit, themed via the `--un-*` overrides in the

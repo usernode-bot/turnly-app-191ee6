@@ -67,9 +67,10 @@
       "expectText": "EN"
     },
     {
-      "name": "First-launch language sheet appears when no choice is saved",
+      "name": "Home opens straight to the due card for an English browser",
       "path": "/",
-      "expectText": "Choose your language"
+      "expectSelector": "#hero-iuran",
+      "expectText": "Contribution due"
     },
     {
       "id": "revisi.workshop",

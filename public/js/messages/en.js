@@ -78,6 +78,9 @@
     'history.round': 'Round {round} · {date}',
     'history.recipient': 'Recipient: {name}',
     'history.paidOut': 'Payout handed over',
+    'history.showPayments': 'Show payments',
+    'history.hidePayments': 'Hide payments',
+    'history.paymentsLabel': 'Payments for round {round}',
     'history.empty': 'No finished rounds yet. The first payout appears here.',
 
     'action.confirm': 'Confirm',

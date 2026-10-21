@@ -5,7 +5,11 @@
  * against an anchor DAY, offsetting every date from it, so the relative
  * labels ("2 hari lagi", "Telat 3 hari") tell the same story on any day
  * with fresh dates — the family group's due date is always 2 days away,
- * the office group's late member is always 3 days late. The default
+ * the office group's late member is always 3 days late. The finished
+ * rounds carry one obviously fake payment per member, so the History tab
+ * can show who paid in each one: in the family group everyone paid in
+ * rounds 1 and 2, and in round 3 everyone paid except Pak Joko; in the
+ * office group everyone paid in round 1. The default
  * anchor is today in Asia/Jakarta, pinned for one page load with
  * ?anchor=YYYY-MM-DD (deterministic screenshots and tests); an invalid
  * anchor silently falls back to today. The declared rules
@@ -47,6 +51,27 @@
         anggota_id: anggotaId,
         status: status,
       };
+    }
+
+    // One member's payment in a finished round: the same shape as the
+    // active rows, so the History tab reads them the same way.
+    function iuranLalu(arisanId, periodeNomor, anggotaNomor, status) {
+      return {
+        id: arisanId + '-p' + periodeNomor + '-i' + anggotaNomor,
+        periode_id: arisanId + '-periode-' + periodeNomor,
+        anggota_id: arisanId + '-a' + anggotaNomor,
+        status: status,
+      };
+    }
+
+    // A finished round's payments: every member paid except the numbers in
+    // `belum`, who show as Late N days once the round's due date has passed.
+    function pembayaranLalu(arisanId, periodeNomor, jumlahAnggota, belum) {
+      var rows = [];
+      for (var n = 1; n <= jumlahAnggota; n++) {
+        rows.push(iuranLalu(arisanId, periodeNomor, n, belum.indexOf(n) === -1 ? 'lunas' : 'belum'));
+      }
+      return rows;
     }
 
     // ── Arisan Keluarga Besar ──────────────────────────────────────────────
@@ -123,7 +148,13 @@
         iuran('demo-kb', 8, 'demo-kb-a8', 'lunas'),
         iuran('demo-kb', 9, 'demo-kb-a9', 'belum'), // Pak Joko
         iuran('demo-kb', 10, 'demo-kb-a10', 'lunas'),
-      ],
+      ].concat(
+        // Rounds 1 and 2: everyone paid. Round 3: everyone paid except
+        // Pak Joko (a9), who shows as Late 28 days from that round's date.
+        pembayaranLalu('demo-kb', 1, 10, []),
+        pembayaranLalu('demo-kb', 2, 10, []),
+        pembayaranLalu('demo-kb', 3, 10, [9])
+      ),
     };
 
     // ── Arisan Kantor Lantai 3 ─────────────────────────────────────────────
@@ -174,7 +205,9 @@
         iuran('demo-k3', 4, 'demo-k3-a4', 'lunas'),
         iuran('demo-k3', 5, 'demo-k3-a5', 'lunas'),
         iuran('demo-k3', 6, 'demo-k3-a6', 'belum'), // Mba Putri -> telat 3 hari
-      ],
+      ].concat(
+        pembayaranLalu('demo-k3', 1, 6, []) // round 1: everyone paid
+      ),
     };
 
     return { arisan: [keluargaBesar, kantorLantai3] };

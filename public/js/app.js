@@ -356,12 +356,42 @@
       return;
     }
     // Fallback sheet for a plain local run where the hosted kit is absent.
+    // Escape closes a <dialog> on its own; a backdrop tap and a downward
+    // swipe close it the way the platform sheet does.
     dialog = document.createElement('dialog');
     dialog.className = 'sheet-fallback';
     dialog.appendChild(isi);
     document.body.appendChild(dialog);
     dialog.addEventListener('close', tutup);
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) dialog.close();
+    });
+    var mulaiY = null;
+    isi.addEventListener('touchstart', function (e) {
+      mulaiY = e.touches[0].clientY;
+    }, { passive: true });
+    isi.addEventListener('touchend', function (e) {
+      if (mulaiY === null) return;
+      var akhirY = e.changedTouches[0].clientY;
+      if (akhirY - mulaiY > 60) dialog.close();
+      mulaiY = null;
+    }, { passive: true });
     dialog.showModal();
+  }
+
+  // True when the browser itself is clearly in English or Indonesian: such
+  // a first visit is not asked, so the sheet never stands between a person
+  // and the screen they opened.
+  function bahasaJelas() {
+    var daftar = (window.navigator && window.navigator.languages) || [];
+    if (!daftar.length && window.navigator && window.navigator.language) {
+      daftar = [window.navigator.language];
+    }
+    for (var i = 0; i < daftar.length; i++) {
+      var utama = String(daftar[i] || '').toLowerCase().split('-')[0];
+      if (utama === 'en' || utama === 'id') return true;
+    }
+    return false;
   }
 
   // ── Modal tolak bukti: reject with an optional reason ────────────────────
@@ -448,7 +478,7 @@
   // ?lang= visit keeps it out of the way).
   function start() {
     route();
-    if (!i18n.hasSavedChoice() && !i18n.hasUrlLocale()) bukaSheetBahasa();
+    if (!i18n.hasSavedChoice() && !i18n.hasUrlLocale() && !bahasaJelas()) bukaSheetBahasa();
   }
 
   function rerender() {
