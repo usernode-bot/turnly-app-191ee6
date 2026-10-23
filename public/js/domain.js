@@ -253,6 +253,27 @@
     return nomor;
   }
 
+  // How urgently the viewer's own payment should lead the Home list: late
+  // first, then unpaid, then awaiting confirmation, then paid. Anything
+  // with no status (the viewer is not a member, say) sorts last.
+  var URUTAN_STATUS = { telat: 0, belum: 1, menunggu: 2, lunas: 3 };
+
+  // A new array ordered by each item's status key (see URUTAN_STATUS),
+  // with equal and unknown statuses keeping their original order. The
+  // input array is never mutated.
+  function urutkanMenurutStatus(daftar) {
+    return (daftar || []).map(function (item, index) {
+      return { item: item, index: index };
+    }).sort(function (a, b) {
+      var ka = a.item && a.item.status && a.item.status.key;
+      var kb = b.item && b.item.status && b.item.status.key;
+      var ra = ka in URUTAN_STATUS ? URUTAN_STATUS[ka] : 4;
+      var rb = kb in URUTAN_STATUS ? URUTAN_STATUS[kb] : 4;
+      if (ra !== rb) return ra - rb;
+      return a.index - b.index;
+    }).map(function (entry) { return entry.item; });
+  }
+
   // The periode's recipient anggota.
   function penerimaPeriode(arisan) {
     if (!arisan.periode_aktif) return null;
@@ -281,6 +302,8 @@
     pembayaranPeriode: pembayaranPeriode,
     penerimaPeriode: penerimaPeriode,
     nomorWhatsApp: nomorWhatsApp,
+    URUTAN_STATUS: URUTAN_STATUS,
+    urutkanMenurutStatus: urutkanMenurutStatus,
     inisialGrup: inisialGrup,
     giliranPengguna: giliranPengguna,
     formatBulanTahun: formatBulanTahun,
