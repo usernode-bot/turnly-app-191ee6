@@ -235,6 +235,24 @@
     });
   }
 
+  // A phone number in the form wa.me expects: digits only, with the
+  // Indonesian country code. A local 08... becomes 628..., an already
+  // international 62... is kept, and a bare 8... gains the 62. Anything
+  // else, or a result outside 10-15 digits, returns null so a member with
+  // no usable number simply gets no reminder link.
+  function nomorWhatsApp(nomorHp) {
+    if (nomorHp === null || nomorHp === undefined) return null;
+    var digit = String(nomorHp).replace(/\D/g, '');
+    if (!digit) return null;
+    var nomor;
+    if (digit.indexOf('62') === 0) nomor = digit;
+    else if (digit.charAt(0) === '0') nomor = '62' + digit.slice(1);
+    else if (digit.charAt(0) === '8') nomor = '62' + digit;
+    else return null;
+    if (nomor.length < 10 || nomor.length > 15) return null;
+    return nomor;
+  }
+
   // How urgently the viewer's own payment should lead the Home list: late
   // first, then unpaid, then awaiting confirmation, then paid. Anything
   // with no status (the viewer is not a member, say) sorts last.
@@ -283,6 +301,7 @@
     totalTerkumpul: totalTerkumpul,
     pembayaranPeriode: pembayaranPeriode,
     penerimaPeriode: penerimaPeriode,
+    nomorWhatsApp: nomorWhatsApp,
     URUTAN_STATUS: URUTAN_STATUS,
     urutkanMenurutStatus: urutkanMenurutStatus,
     inisialGrup: inisialGrup,

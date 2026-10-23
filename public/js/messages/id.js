@@ -52,7 +52,8 @@
     // Detail arisan: lingkaran giliran dan sekelilingnya
     'detail.turnOf': 'Giliran {round} dari {rounds}',
     'detail.collected': 'Terkumpul {collected} dari {total}',
-    'detail.paidProgress': '{paid} anggota lunas',
+    'detail.paidProgress': '{paid} dari {total} anggota sudah bayar',
+    'detail.seeList': 'Lihat daftar',
     'detail.viewAs': 'Lihat sebagai (demo)',
     'role.member': 'Anggota',
     'role.admin': 'Admin',
@@ -73,7 +74,16 @@
 
     'action.confirm': 'Konfirmasi',
     'action.reject': 'Tolak',
-    'action.remind': 'Ingatkan',
+    'action.remindWhatsApp': 'Ingatkan via WhatsApp',
+
+    // Lembar daftar anggota yang dibuka dari jumlah sudah bayar.
+    'members.title': 'Siapa sudah bayar periode ini',
+    'members.close': 'Tutup',
+
+    // Pengingat WhatsApp: aplikasi hanya membuka obrolan yang sudah terisi.
+    // Satu versi untuk jatuh tempo mendatang, satu untuk tanggal yang lewat.
+    'whatsapp.reminder': 'Halo {name}, pengingat dari {group}: iuran periode {round} sebesar {amount} jatuh tempo {date}. Mohon kirim bukti transfer lewat Turnly. Terima kasih.',
+    'whatsapp.reminderLate': 'Halo {name}, pengingat dari {group}: iuran periode {round} sebesar {amount} sudah lewat jatuh tempo sejak {date}. Mohon kirim bukti transfer lewat Turnly. Terima kasih.',
 
     'reject.title': 'Tolak bukti dari {name}',
     'reject.reasonLabel': 'Alasan (opsional)',
@@ -99,6 +109,7 @@
 
     'a11y.memberStatus': '{name}, {status}',
     'a11y.back': 'Kembali',
+    'a11y.remindWhatsApp': 'Ingatkan {name} via WhatsApp',
 
     'pay.action': 'Bayar iuran',
     'pay.title': 'Bayar iuran {group}',
@@ -116,8 +127,6 @@
     'toast.accountCopied': 'Nomor rekening disalin',
     'toast.confirmed': 'Iuran {name} dikonfirmasi lunas',
     'toast.rejected': 'Bukti ditolak. {name} bisa kirim ulang.',
-    'toast.reminderSent': 'Pengingat terkirim ke {name}',
-    'toast.remindersSent': 'Pengingat terkirim ke {count} anggota',
     'demo.note': 'Tampilan berisi data contoh untuk mode demo.',
 
     'language.title': 'Bahasa',

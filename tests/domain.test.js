@@ -32,6 +32,19 @@ test('rupiah is always Rp with dot thousands, whatever the language', () => {
   assert.throws(() => d.formatRupiah(500000.5));
 });
 
+test('nomorWhatsApp turns an Indonesian number into the wa.me form', () => {
+  assert.equal(d.nomorWhatsApp('081200001001'), '6281200001001');
+  assert.equal(d.nomorWhatsApp('6281200001001'), '6281200001001');
+  assert.equal(d.nomorWhatsApp('+62 812-0000-1001'), '6281200001001');
+  assert.equal(d.nomorWhatsApp('81200001001'), '6281200001001');
+  // Nothing usable: missing, empty, or not an Indonesian number shape.
+  assert.equal(d.nomorWhatsApp(null), null);
+  assert.equal(d.nomorWhatsApp(undefined), null);
+  assert.equal(d.nomorWhatsApp(''), null);
+  assert.equal(d.nomorWhatsApp('123'), null);
+  assert.equal(d.nomorWhatsApp('+1 415 555 0100'), null);
+});
+
 test('the demo anchor still yields 2 days ahead and 3 days late', () => {
   assert.equal(d.selisihHari('2026-10-05', '2026-10-07'), 2);
   assert.equal(d.selisihHari('2026-10-05', '2026-10-02'), -3);
