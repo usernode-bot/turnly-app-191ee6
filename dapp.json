@@ -28,6 +28,18 @@
       ]
     },
     {
+      "name": "Paid summary row on Detail arisan",
+      "path": "/arisan/demo-kb",
+      "expectSelector": "#btn-progres",
+      "expectText": "7 of 10 members paid"
+    },
+    {
+      "name": "Paid summary in Indonesian",
+      "path": "/arisan/demo-kb?lang=id",
+      "expectSelector": "#btn-progres",
+      "expectText": "7 dari 10 anggota sudah bayar"
+    },
+    {
       "name": "Home greeting renders a name",
       "path": "/",
       "expectSelector": "#home-greeting",
