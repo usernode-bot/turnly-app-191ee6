@@ -48,11 +48,12 @@
 
     'groups.title': 'Your arisan groups',
     'groups.explainer': 'An arisan is a rotating savings group: members pay in each round and take turns receiving the pot.',
-    'groups.summary': '{paid} of {total} members paid · Round {round} of {rounds}',
+    'groups.paidCount': '{paid} of {total} paid',
+    'groups.round': 'Round {round} of {rounds}',
+    'groups.recipient': 'Recipient: {name}',
     'groups.yourTurn': 'Your turn: Round {round} ({when})',
     'groups.yourTurnNow': 'Your turn: this round, you receive the pot',
     'groups.yourTurnPassed': 'Your turn was Round {round}',
-    'groups.recipientNow': 'Recipient this round: {name}',
 
     // Read aloud (Bacakan) on the Home contribution block: whole sentences
     // the browser's voice speaks. The amount arrives as plain digits, so
@@ -68,7 +69,8 @@
     // Detail arisan: the turn circle and its surroundings
     'detail.turnOf': 'Turn {round} of {rounds}',
     'detail.collected': 'Collected {collected} of {total}',
-    'detail.paidProgress': '{paid, plural, one{1 member paid} other{# members paid}}',
+    'detail.paidProgress': '{total, plural, one{{paid} of 1 member paid} other{{paid} of # members paid}}',
+    'detail.seeList': 'See list',
     'detail.viewAs': 'Viewing as (demo)',
     'role.member': 'Member',
     'role.admin': 'Admin',
@@ -89,7 +91,16 @@
 
     'action.confirm': 'Confirm',
     'action.reject': 'Reject',
-    'action.remind': 'Remind',
+    'action.remindWhatsApp': 'Remind via WhatsApp',
+
+    // The member list sheet opened from the paid count.
+    'members.title': 'Who has paid this round',
+    'members.close': 'Close',
+
+    // WhatsApp reminders: the app only opens a prefilled chat. One version
+    // for an upcoming due date, one for a date that has passed.
+    'whatsapp.reminder': 'Hi {name}, a friendly reminder from {group}: your round {round} contribution of {amount} is due on {date}. Please send your proof of transfer in Turnly. Thank you.',
+    'whatsapp.reminderLate': 'Hi {name}, a friendly reminder from {group}: your round {round} contribution of {amount} was due on {date}. Please send your proof of transfer in Turnly. Thank you.',
 
     'reject.title': 'Reject proof from {name}',
     'reject.reasonLabel': 'Reason (optional)',
@@ -115,6 +126,7 @@
 
     'a11y.memberStatus': '{name}, {status}',
     'a11y.back': 'Back',
+    'a11y.remindWhatsApp': 'Remind {name} via WhatsApp',
 
     'pay.action': 'Pay contribution',
     'pay.title': 'Pay contribution for {group}',
@@ -132,8 +144,6 @@
     'toast.accountCopied': 'Account number copied',
     'toast.confirmed': 'Confirmed {name} as paid',
     'toast.rejected': 'Proof rejected. {name} can send a new one.',
-    'toast.reminderSent': 'Reminder sent to {name}',
-    'toast.remindersSent': '{count, plural, one{Reminder sent to 1 member} other{Reminder sent to # members}}',
     'demo.note': 'This screen shows sample data for demo mode.',
 
     'language.title': 'Language',

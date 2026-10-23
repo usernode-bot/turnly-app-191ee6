@@ -225,37 +225,65 @@
     var ul = document.getElementById('daftar-arisan');
     ul.textContent = '';
 
-    demo.arisan.forEach(function (arisan) {
+    // Groups the viewer still owes come first: late, unpaid, awaiting
+    // confirmation, paid; the demo order stays inside each group.
+    var baris = d.urutkanMenurutStatus(demo.arisan.map(function (arisan) {
       var milik = app.statusPengguna(arisan);
+      return { arisan: arisan, milik: milik, status: milik && milik.status };
+    }));
+
+    baris.forEach(function (row) {
+      var arisan = row.arisan;
+      var milik = row.milik;
       var li = app.el('li', '');
-      var a = app.el('a', 'list-row justify-between');
+      var a = app.el('a', 'list-row items-start justify-between');
       a.href = '/arisan/' + arisan.id;
 
-      var kiri = app.el('div', 'flex min-w-0 items-center gap-3');
+      var kiri = app.el('div', 'flex min-w-0 flex-1 items-start gap-3');
       kiri.appendChild(app.avatarEl(milik.anggota.nama_tampil, milik.status, {
         text: d.inisialGrup(arisan.nama),
         silent: true,
       }));
-      var teks = app.el('div', 'min-w-0');
-      teks.appendChild(app.el('p', 'truncate text-body font-medium', arisan.nama));
-      teks.appendChild(app.el('p', 'text-small text-muted', t('groups.summary', {
-        paid: d.hitungLunas(arisan),
-        total: arisan.anggota.length,
+      var teks = app.el('div', 'flex min-w-0 flex-1 flex-col gap-1');
+      teks.appendChild(app.el('p', 'line-clamp-2 break-words text-body font-medium', arisan.nama));
+
+      // Who has paid this round, as a bar with the count beside it.
+      var paid = d.hitungLunas(arisan);
+      var total = arisan.anggota.length;
+      var jumlah = t('groups.paidCount', { paid: paid, total: total });
+      var progressRow = app.el('div', 'flex items-center gap-2');
+      var progress = app.el('div', 'progress');
+      progress.setAttribute('role', 'progressbar');
+      progress.setAttribute('aria-valuemin', '0');
+      progress.setAttribute('aria-valuemax', String(total));
+      progress.setAttribute('aria-valuenow', String(paid));
+      progress.setAttribute('aria-valuetext', jumlah);
+      progress.setAttribute('aria-label', jumlah);
+      var fill = app.el('div', 'progress-fill');
+      fill.style.width = (total ? Math.round(paid / total * 100) : 0) + '%';
+      progress.appendChild(fill);
+      progressRow.appendChild(progress);
+      progressRow.appendChild(app.el('span', 'shrink-0 whitespace-nowrap text-small text-muted', jumlah));
+      teks.appendChild(progressRow);
+
+      teks.appendChild(app.el('p', 'text-small text-muted', t('groups.round', {
         round: arisan.periode_aktif.nomor,
         rounds: arisan.total_periode,
       })));
 
-      // When this member receives the pot, then who receives it this round
-      // (hidden when that is the member themselves).
+      // Who receives the pot this round (hidden when that is the viewer).
+      var penerima = d.penerimaPeriode(arisan);
+      if (penerima && penerima.id !== milik.anggota.id) {
+        teks.appendChild(app.el('p', 'text-small text-muted',
+          t('groups.recipient', { name: penerima.nama_tampil })));
+      }
+
       var giliran = d.giliranPengguna(arisan, milik.anggota);
       if (giliran) {
         if (giliran.keadaan === 'nanti') {
-          var when = arisan.periode === 'mingguan'
-            ? d.formatTanggalPendek(giliran.tanggal, i18n.getLocale())
-            : d.formatBulanTahun(giliran.tanggal, i18n.getLocale());
           teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurn', {
             round: giliran.nomor,
-            when: when,
+            when: d.formatTanggalPendek(giliran.tanggal, i18n.getLocale()),
           })));
         } else if (giliran.keadaan === 'sekarang') {
           teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnNow')));
@@ -263,11 +291,6 @@
           teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnPassed', {
             round: giliran.nomor,
           })));
-        }
-        var penerima = d.penerimaPeriode(arisan);
-        if (penerima && penerima.id !== milik.anggota.id) {
-          teks.appendChild(app.el('p', 'text-small text-muted',
-            t('groups.recipientNow', { name: penerima.nama_tampil })));
         }
       }
       kiri.appendChild(teks);

@@ -32,6 +32,19 @@ test('rupiah is always Rp with dot thousands, whatever the language', () => {
   assert.throws(() => d.formatRupiah(500000.5));
 });
 
+test('nomorWhatsApp turns an Indonesian number into the wa.me form', () => {
+  assert.equal(d.nomorWhatsApp('081200001001'), '6281200001001');
+  assert.equal(d.nomorWhatsApp('6281200001001'), '6281200001001');
+  assert.equal(d.nomorWhatsApp('+62 812-0000-1001'), '6281200001001');
+  assert.equal(d.nomorWhatsApp('81200001001'), '6281200001001');
+  // Nothing usable: missing, empty, or not an Indonesian number shape.
+  assert.equal(d.nomorWhatsApp(null), null);
+  assert.equal(d.nomorWhatsApp(undefined), null);
+  assert.equal(d.nomorWhatsApp(''), null);
+  assert.equal(d.nomorWhatsApp('123'), null);
+  assert.equal(d.nomorWhatsApp('+1 415 555 0100'), null);
+});
+
 test('the demo anchor still yields 2 days ahead and 3 days late', () => {
   assert.equal(d.selisihHari('2026-10-05', '2026-10-07'), 2);
   assert.equal(d.selisihHari('2026-10-05', '2026-10-02'), -3);
@@ -139,6 +152,23 @@ test('giliranTerdekat takes the soonest turn, a current round first', () => {
   // Every turn past, and no groups at all, give null.
   assert.equal(d.giliranTerdekat([pasangan(jauh, 2), pasangan(dekat, 1)], hariIni), null);
   assert.equal(d.giliranTerdekat([], hariIni), null);
+});
+
+test('urutkanMenurutStatus puts late, unpaid, awaiting and paid in that order', () => {
+  const items = [
+    { id: 'a', status: { key: 'lunas' } },
+    { id: 'b', status: { key: 'telat' } },
+    { id: 'c', status: { key: 'menunggu' } },
+    { id: 'd', status: { key: 'belum' } },
+    { id: 'e', status: { key: 'telat' } },
+    { id: 'f', status: null },
+  ];
+  const copy = items.slice();
+  const sorted = d.urutkanMenurutStatus(items);
+  assert.deepEqual(sorted.map((i) => i.id), ['b', 'e', 'd', 'c', 'a', 'f']);
+  assert.deepEqual(items, copy, 'the input array is left alone');
+  assert.notEqual(sorted, items);
+  assert.deepEqual(d.urutkanMenurutStatus([]), []);
 });
 
 test('formatBulanTahun follows the locale, on the Jakarta calendar day', () => {

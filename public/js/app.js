@@ -165,6 +165,41 @@
     selesai();
   }
 
+  // ── WhatsApp reminder: opens a prefilled chat, sends nothing itself ──────
+  // The app never sends a message: the organizer presses send in WhatsApp.
+  // A member without a usable number gets null, so no link is shown.
+  function linkWhatsApp(arisan, anggota) {
+    var nomor = d.nomorWhatsApp(anggota && anggota.nomor_hp);
+    if (!nomor) return null;
+    var status = d.statusIuranTampil(
+      d.iuranUntukAnggota(arisan, anggota.id), arisan.periode_aktif, HARI_INI
+    );
+    var params = {
+      name: anggota.nama_tampil,
+      group: arisan.nama,
+      round: arisan.periode_aktif.nomor,
+      amount: d.formatRupiah(arisan.nominal),
+      date: d.formatTanggalPendek(arisan.periode_aktif.tanggal_jatuh_tempo, i18n.getLocale()),
+    };
+    var pesan;
+    if (status.key === 'telat') pesan = t('whatsapp.reminderLate', params);
+    else pesan = t('whatsapp.reminder', params);
+    return 'https://wa.me/' + nomor + '?text=' + encodeURIComponent(pesan);
+  }
+
+  // The reminder as a secondary button-shaped link for a member row, or
+  // null when they have no usable number.
+  function linkRemindEl(arisan, anggota, kelas) {
+    var href = linkWhatsApp(arisan, anggota);
+    if (!href) return null;
+    var a = el('a', 'btn-secondary' + (kelas ? ' ' + kelas : ''), t('action.remindWhatsApp'));
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.setAttribute('aria-label', t('a11y.remindWhatsApp', { name: anggota.nama_tampil }));
+    return a;
+  }
+
   // ── Lembar bayar iuran: account box, photo proof, send ───────────────────
 
   var sheetTerbuka = false;
@@ -529,9 +564,8 @@
     salinRekening: salinRekening,
     bukaSheetBayar: bukaSheetBayar,
     bukaModalTolak: bukaModalTolak,
-    remind: function (anggota) {
-      toast(t('toast.reminderSent', { name: anggota.nama_tampil }));
-    },
+    linkWhatsApp: linkWhatsApp,
+    linkRemindEl: linkRemindEl,
     getRole: getRole,
     setRole: setRole,
     rerender: rerender,

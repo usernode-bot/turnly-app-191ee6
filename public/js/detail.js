@@ -4,7 +4,8 @@
  *
  * Actions are role-based for the demo: "member" is the demo viewer's own
  * role (pay, or see the awaiting note), "admin" gets Confirm, Reject with
- * reason and Remind per row plus a remind-all action bar. Renders into
+ * reason and a WhatsApp reminder per unpaid row; the remind-all bar opens
+ * the member list sheet. Renders into
  * the static #detail-view skeleton in index.html; all copy comes from i18n.
  */
 (function () {
@@ -83,7 +84,90 @@
     });
     document.getElementById('detail-progres').textContent = t('detail.paidProgress', {
       paid: d.hitungLunas(arisan),
+      total: arisan.anggota.length,
     });
+    document.getElementById('progres-lihat').textContent = t('detail.seeList');
+  }
+
+  // ── Member list sheet: who has paid this round ───────────────────────────
+  // Everyone can open it; only the organizer view carries the WhatsApp
+  // reminder links. Rows sort by status, turn order within each status.
+  var STATUS_URUT = { lunas: 0, menunggu: 1, belum: 2, telat: 3 };
+  var sheetAnggotaTerbuka = false;
+
+  function bukaSheetAnggota(arisan) {
+    if (sheetAnggotaTerbuka) return;
+    sheetAnggotaTerbuka = true;
+    var isi = document.getElementById('tpl-sheet-anggota').content.firstElementChild.cloneNode(true);
+    isi.querySelector('#anggota-judul').textContent = t('members.title');
+    isi.querySelector('#anggota-ringkas').textContent = t('detail.paidProgress', {
+      paid: d.hitungLunas(arisan),
+      total: arisan.anggota.length,
+    });
+    isi.querySelector('#anggota-tutup').textContent = t('members.close');
+
+    var daftar = isi.querySelector('#anggota-daftar');
+    var peran = app.getRole();
+    var baris = d.anggotaUrut(arisan).map(function (anggota) {
+      return {
+        anggota: anggota,
+        status: d.statusIuranTampil(
+          d.iuranUntukAnggota(arisan, anggota.id), arisan.periode_aktif, HARI_INI
+        ),
+      };
+    });
+    baris.sort(function (a, b) {
+      return STATUS_URUT[a.status.key] - STATUS_URUT[b.status.key];
+    });
+
+    baris.forEach(function (item) {
+      var anggota = item.anggota;
+      var status = item.status;
+      var li = app.el('li', 'flex flex-col gap-2 px-4 py-3');
+
+      var atas = app.el('div', 'flex items-center gap-3');
+      atas.appendChild(app.avatarEl(anggota.nama_tampil, status));
+      var namaBaris = app.el('div', 'flex min-w-0 flex-wrap items-center gap-1.5');
+      namaBaris.appendChild(app.el('p', 'truncate text-body font-medium', anggota.nama_tampil));
+      if (anggota.user_id === PENGGUNA_ID) namaBaris.appendChild(app.tagEl(t('tag.you')));
+      if (anggota.id === arisan.admin_id) namaBaris.appendChild(app.tagEl(t('tag.admin')));
+      atas.appendChild(namaBaris);
+      atas.appendChild(app.chipEl(status));
+      li.appendChild(atas);
+
+      if (peran === 'admin' && (status.key === 'belum' || status.key === 'telat')) {
+        var tautan = app.linkRemindEl(arisan, anggota, 'w-full');
+        if (tautan) li.appendChild(tautan);
+      }
+      daftar.appendChild(li);
+    });
+
+    var sheet = null;
+    var dialog = null;
+    var tutup = function () { sheetAnggotaTerbuka = false; };
+    var tutupSheet = function () {
+      if (sheet) sheet.dismiss();
+      if (dialog) dialog.close();
+    };
+    isi.querySelector('#anggota-tutup').addEventListener('click', tutupSheet);
+
+    if (window.unNative && window.unNative.presentSheet) {
+      sheet = window.unNative.presentSheet({ contentEl: isi, onDismiss: tutup });
+      return;
+    }
+    // Fallback sheet for a plain local run where the hosted kit is absent.
+    dialog = document.createElement('dialog');
+    dialog.className = 'sheet-fallback';
+    dialog.appendChild(isi);
+    document.body.appendChild(dialog);
+    dialog.addEventListener('close', function () {
+      tutup();
+      dialog.remove();
+    });
+    dialog.addEventListener('click', function (e) {
+      if (e.target === dialog) dialog.close();
+    });
+    dialog.showModal();
   }
 
   // ── Legend: the four statuses, avatar + chip + one sentence ───────────────
@@ -162,7 +246,8 @@
             app.bukaModalTolak(arisan, anggota);
           }, 'border-danger/60 text-danger'));
         } else if (status.key === 'belum' || status.key === 'telat') {
-          tombol.push(tombolKelas(t('action.remind'), function () { app.remind(anggota); }, ''));
+          var tautan = app.linkRemindEl(arisan, anggota);
+          if (tautan) tombol.push(tautan);
         }
       } else if (pengguna && anggota.id === pengguna.id
           && (status.key === 'belum' || status.key === 'telat')) {
@@ -326,9 +411,7 @@
       if (belum > 0) {
         btn.hidden = false;
         btn.textContent = t('bar.remindUnpaid', { count: belum });
-        aksiBar = function () {
-          app.toast(t('toast.remindersSent', { count: belum }));
-        };
+        aksiBar = function () { bukaSheetAnggota(arisan); };
       } else {
         bar.hidden = true; // everyone paid: nothing to remind
         return;
@@ -385,6 +468,9 @@
   });
   document.getElementById('btn-bar').addEventListener('click', function () {
     if (aksiBar) aksiBar();
+  });
+  document.getElementById('btn-progres').addEventListener('click', function () {
+    if (arisanKini) bukaSheetAnggota(arisanKini);
   });
 
   window.TurnlyDetail = { render: render };
