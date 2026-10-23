@@ -19,8 +19,8 @@ test('English plurals at 0, 1 and many', () => {
   assert.equal(i18n.t('home.daysLeft', { days: 2 }), 'In 2 days');
   assert.equal(i18n.t('home.pastDue', { days: 1 }), '1 day past due');
   assert.equal(i18n.t('home.pastDue', { days: 3 }), '3 days past due');
-  assert.equal(i18n.t('groups.summary', { paid: 7, total: 10, round: 4, rounds: 10 }),
-    '7 of 10 members paid · Round 4 of 10');
+  assert.equal(i18n.t('groups.paidCount', { paid: 7, total: 10 }), '7 of 10 paid');
+  assert.equal(i18n.t('groups.round', { round: 4, rounds: 10 }), 'Round 4 of 10');
 });
 
 test('Indonesian plurals at 0, 1 and many (no plural forms)', () => {
@@ -30,8 +30,8 @@ test('Indonesian plurals at 0, 1 and many (no plural forms)', () => {
   assert.equal(i18n.t('status.late', { days: 3 }), 'Telat 3 hari');
   assert.equal(i18n.t('home.dueOn', { date: '7 Okt' }), 'Jatuh tempo 7 Okt');
   assert.equal(i18n.t('home.daysLeft', { days: 2 }), '2 hari lagi');
-  assert.equal(i18n.t('groups.summary', { paid: 7, total: 10, round: 4, rounds: 10 }),
-    '7 dari 10 anggota sudah bayar · Periode 4 dari 10');
+  assert.equal(i18n.t('groups.paidCount', { paid: 7, total: 10 }), '7 dari 10 sudah bayar');
+  assert.equal(i18n.t('groups.round', { round: 4, rounds: 10 }), 'Periode 4 dari 10');
   i18n.setChoice('en');
 });
 

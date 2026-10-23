@@ -32,11 +32,12 @@
 
     'groups.title': 'Arisan Anda',
     'groups.explainer': 'Arisan adalah tabungan bergilir: anggota membayar tiap periode dan bergantian menerima dana.',
-    'groups.summary': '{paid} dari {total} anggota sudah bayar · Periode {round} dari {rounds}',
+    'groups.paidCount': '{paid} dari {total} sudah bayar',
+    'groups.round': 'Periode {round} dari {rounds}',
+    'groups.recipient': 'Penerima: {name}',
     'groups.yourTurn': 'Giliran Anda: Periode {round} ({when})',
     'groups.yourTurnNow': 'Giliran Anda: periode ini, Anda menerima dana',
     'groups.yourTurnPassed': 'Giliran Anda sudah lewat: Periode {round}',
-    'groups.recipientNow': 'Penerima periode ini: {name}',
 
     // Bacakan pada blok iuran Beranda: kalimat utuh yang dibacakan suara
     // peramban. Nominal masuk sebagai angka polos agar suaranya terbaca.

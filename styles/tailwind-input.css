@@ -247,6 +247,15 @@
     @apply border-2 border-danger bg-danger-soft text-danger;
   }
 
+  /* A slim bar for how many members have paid this round: a success fill
+     on the tag grey track, with the count always written beside it. */
+  .progress {
+    @apply h-2 w-full overflow-hidden rounded-full bg-raised;
+  }
+  .progress-fill {
+    @apply h-full rounded-full bg-success;
+  }
+
   /* A small tag inside a row ("Anda", "Admin"). */
   .tag {
     @apply inline-flex shrink-0 items-center rounded-full bg-raised px-2 py-0.5 text-small text-muted;

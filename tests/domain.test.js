@@ -85,6 +85,23 @@ test('inisialGrup takes the initials after a leading "Arisan"', () => {
   assert.equal(d.inisialGrup('Arisan  Kantor   Lantai'), 'KL'); // extra spaces ignored
 });
 
+test('urutkanMenurutStatus puts late, unpaid, awaiting and paid in that order', () => {
+  const items = [
+    { id: 'a', status: { key: 'lunas' } },
+    { id: 'b', status: { key: 'telat' } },
+    { id: 'c', status: { key: 'menunggu' } },
+    { id: 'd', status: { key: 'belum' } },
+    { id: 'e', status: { key: 'telat' } },
+    { id: 'f', status: null },
+  ];
+  const copy = items.slice();
+  const sorted = d.urutkanMenurutStatus(items);
+  assert.deepEqual(sorted.map((i) => i.id), ['b', 'e', 'd', 'c', 'a', 'f']);
+  assert.deepEqual(items, copy, 'the input array is left alone');
+  assert.notEqual(sorted, items);
+  assert.deepEqual(d.urutkanMenurutStatus([]), []);
+});
+
 test('formatBulanTahun follows the locale, on the Jakarta calendar day', () => {
   assert.equal(d.formatBulanTahun('2026-12-07', 'id'), 'Des 2026');
   assert.equal(d.formatBulanTahun('2026-12-07', 'en'), 'Dec 2026');

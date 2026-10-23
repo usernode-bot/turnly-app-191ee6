@@ -44,11 +44,12 @@
 
     'groups.title': 'Your arisan groups',
     'groups.explainer': 'An arisan is a rotating savings group: members pay in each round and take turns receiving the pot.',
-    'groups.summary': '{paid} of {total} members paid · Round {round} of {rounds}',
+    'groups.paidCount': '{paid} of {total} paid',
+    'groups.round': 'Round {round} of {rounds}',
+    'groups.recipient': 'Recipient: {name}',
     'groups.yourTurn': 'Your turn: Round {round} ({when})',
     'groups.yourTurnNow': 'Your turn: this round, you receive the pot',
     'groups.yourTurnPassed': 'Your turn was Round {round}',
-    'groups.recipientNow': 'Recipient this round: {name}',
 
     // Read aloud (Bacakan) on the Home contribution block: whole sentences
     // the browser's voice speaks. The amount arrives as plain digits, so
