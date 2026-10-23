@@ -134,6 +134,28 @@ function struktural(data) {
   }
 }
 
+test('the nearest turn is the office group four days out, with its pot', () => {
+  const pasanganDari = (data) => data.arisan.map((arisan) => ({
+    arisan,
+    anggota: arisan.anggota.filter((a) => a.user_id === demo.PENGGUNA_DEMO_ID)[0],
+  }));
+
+  for (const anchor of [ANCHOR, '2026-01-01', '2024-02-29']) {
+    const pilihan = d.giliranTerdekat(pasanganDari(demo.build(anchor)), anchor);
+    // The nearer office turn wins over the family group's bigger, later pot.
+    assert.equal(pilihan.arisan.id, 'demo-k3');
+    assert.equal(pilihan.dana, 600000);
+    assert.equal(pilihan.sisaHari, 4);
+    assert.equal(pilihan.tanggal, d.tanggalPlus(anchor, 4));
+    assert.equal(pilihan.arisan.periode_aktif.nomor, 2);
+    assert.equal(pilihan.arisan.total_periode, 6);
+  }
+
+  const kb = demo.build(ANCHOR).arisan[0];
+  assert.equal(d.danaArisan(kb), 5000000);
+  assert.equal(d.giliranTerdekat(pasanganDari(demo.build(ANCHOR)), ANCHOR).tanggal, '2026-10-09');
+});
+
 test('the past-round payments do not change the active round', () => {
   for (const anchor of [ANCHOR, '2026-01-01', '2024-02-29']) {
     const [kb, k3] = demo.build(anchor).arisan;

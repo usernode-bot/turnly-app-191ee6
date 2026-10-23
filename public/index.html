@@ -133,6 +133,24 @@
         <button id="btn-bacakan" class="btn-secondary mt-1 w-full" hidden></button>
       </section>
 
+      <!-- Your turn to receive: the group whose turn comes next for the
+           viewer, the pot it pays out, the date and the days left, with the
+           group's progress through its rounds. The quiet partner of the
+           payment block above, for reading — it has no action. Filled by
+           renderGiliran() in public/js/beranda.js; hidden when every turn
+           the viewer has is already in the past. -->
+      <section id="giliran-card" class="card flex flex-col gap-1" aria-labelledby="giliran-label" hidden>
+        <p id="giliran-label" class="text-small text-muted"></p>
+        <p id="giliran-nama" class="text-body font-medium"></p>
+        <p id="giliran-nominal" class="font-display text-title tabular-nums"></p>
+        <p id="giliran-tanggal" class="text-body text-muted"></p>
+        <p id="giliran-sisa" class="text-body font-semibold"></p>
+        <div id="giliran-bar" class="mt-3 h-2 overflow-hidden rounded-full bg-raised" role="progressbar">
+          <div id="giliran-bar-isi" class="h-full rounded-full bg-accent"></div>
+        </div>
+        <p id="giliran-progres" class="mt-1 text-small text-muted"></p>
+      </section>
+
       <section>
         <h2 id="arisan-anda-label" class="section-label"></h2>
         <!-- First appearance of "arisan" on this screen: one plain sentence

@@ -64,6 +64,12 @@
       "expectText": "Turn 4 of 10"
     },
     {
+      "name": "Home shows the next payout turn",
+      "path": "/",
+      "expectSelector": "#giliran-card",
+      "expectText": "Your turn to receive"
+    },
+    {
       "name": "Indonesian renders on Beranda",
       "path": "/?lang=id",
       "expectText": "Arisan Anda"
