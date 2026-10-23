@@ -85,6 +85,62 @@ test('inisialGrup takes the initials after a leading "Arisan"', () => {
   assert.equal(d.inisialGrup('Arisan  Kantor   Lantai'), 'KL'); // extra spaces ignored
 });
 
+test('danaArisan is the contribution times the members, in whole rupiah', () => {
+  const dana = d.danaArisan({ nominal: 500000, anggota: new Array(10).fill({}) });
+  assert.equal(dana, 5000000);
+  assert.ok(Number.isInteger(dana));
+  assert.equal(d.formatRupiah(dana), 'Rp5.000.000');
+  assert.equal(d.danaArisan({ nominal: 100000 }), 0); // no members, no pot
+});
+
+test('giliranTerdekat takes the soonest turn, a current round first', () => {
+  const hariIni = '2026-10-05';
+  const jauh = {
+    id: 'jauh', periode: 'bulanan', nominal: 500000, total_periode: 10,
+    periode_aktif: { nomor: 4, tanggal_jatuh_tempo: '2026-10-07' },
+    anggota: new Array(10).fill(null).map((_, i) => ({ id: 'j' + i, urutan_giliran: i + 1 })),
+  };
+  const dekat = {
+    id: 'dekat', periode: 'mingguan', nominal: 100000, total_periode: 6,
+    periode_aktif: { nomor: 2, tanggal_jatuh_tempo: '2026-10-07' },
+    anggota: [{ id: 'd1', urutan_giliran: 1 }, { id: 'd2', urutan_giliran: 2 }, { id: 'd3', urutan_giliran: 3 }],
+  };
+  const sekarang = {
+    id: 'sekarang', periode: 'bulanan', nominal: 200000, total_periode: 4,
+    periode_aktif: { nomor: 2, tanggal_jatuh_tempo: '2026-10-30' },
+    anggota: [{ id: 's1', urutan_giliran: 1 }, { id: 's2', urutan_giliran: 2 }],
+  };
+  const pasangan = (arisan, nomor) => ({ arisan, anggota: arisan.anggota[nomor - 1] });
+
+  // The nearer turn wins over the bigger, later pot (9 days vs 32).
+  const dekatPilihan = d.giliranTerdekat([pasangan(jauh, 5), pasangan(dekat, 3)], hariIni);
+  assert.equal(dekatPilihan.arisan.id, 'dekat');
+  assert.equal(dekatPilihan.tanggal, '2026-10-14');
+  assert.equal(dekatPilihan.sisaHari, 9);
+  assert.equal(dekatPilihan.dana, 300000);
+  assert.deepEqual(dekatPilihan.giliran, { nomor: 3, keadaan: 'nanti', tanggal: '2026-10-14' });
+
+  // A turn in the current round wins even though it is further out, and
+  // carries that round's due date.
+  const sekarangPilihan = d.giliranTerdekat(
+    [pasangan(jauh, 5), pasangan(dekat, 3), pasangan(sekarang, 2)], hariIni
+  );
+  assert.equal(sekarangPilihan.arisan.id, 'sekarang');
+  assert.equal(sekarangPilihan.giliran.keadaan, 'sekarang');
+  assert.equal(sekarangPilihan.tanggal, '2026-10-30');
+  assert.equal(sekarangPilihan.sisaHari, 25);
+  assert.equal(sekarangPilihan.dana, 400000);
+
+  // Two turns on the same day: the first in list order.
+  const kembar = { ...dekat, id: 'kembar' };
+  assert.equal(d.giliranTerdekat([pasangan(kembar, 3), pasangan(dekat, 3)], hariIni).arisan.id, 'kembar');
+  assert.equal(d.giliranTerdekat([pasangan(dekat, 3), pasangan(kembar, 3)], hariIni).arisan.id, 'dekat');
+
+  // Every turn past, and no groups at all, give null.
+  assert.equal(d.giliranTerdekat([pasangan(jauh, 2), pasangan(dekat, 1)], hariIni), null);
+  assert.equal(d.giliranTerdekat([], hariIni), null);
+});
+
 test('formatBulanTahun follows the locale, on the Jakarta calendar day', () => {
   assert.equal(d.formatBulanTahun('2026-12-07', 'id'), 'Des 2026');
   assert.equal(d.formatBulanTahun('2026-12-07', 'en'), 'Dec 2026');

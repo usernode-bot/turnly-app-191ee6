@@ -205,6 +205,46 @@
     return { nomor: nomor, keadaan: keadaan, tanggal: tanggal };
   }
 
+  // The pot one recipient takes: every member pays the contribution once,
+  // so it is the contribution times the number of members, an integer of
+  // rupiah like every other amount in this layer.
+  function danaArisan(arisan) {
+    return arisan.nominal * (arisan.anggota || []).length;
+  }
+
+  // The nearest turn the member still has ahead, across their groups:
+  // { arisan, giliran, tanggal, dana, sisaHari } or null. A turn in the
+  // current round ('sekarang') always wins and carries that round's due
+  // date; otherwise the smallest sisaHari, ties kept in list order.
+  // `pasangan` is [{ arisan, anggota }]. Turns already past are skipped.
+  function giliranTerdekat(pasangan, hariIni) {
+    var terbaik = null;
+    (pasangan || []).forEach(function (pasanganSatu) {
+      var arisan = pasanganSatu.arisan;
+      var giliran = giliranPengguna(arisan, pasanganSatu.anggota);
+      if (!giliran || giliran.keadaan === 'lewat') return;
+      var tanggal = giliran.keadaan === 'sekarang'
+        ? arisan.periode_aktif.tanggal_jatuh_tempo
+        : giliran.tanggal;
+      var calon = {
+        arisan: arisan,
+        giliran: giliran,
+        tanggal: tanggal,
+        dana: danaArisan(arisan),
+        sisaHari: selisihHari(hariIni, tanggal),
+      };
+      if (!terbaik) {
+        terbaik = calon;
+        return;
+      }
+      var sekarang = giliran.keadaan === 'sekarang';
+      var terbaikSekarang = terbaik.giliran.keadaan === 'sekarang';
+      if (sekarang && !terbaikSekarang) terbaik = calon;
+      else if (sekarang === terbaikSekarang && calon.sisaHari < terbaik.sisaHari) terbaik = calon;
+    });
+    return terbaik;
+  }
+
   // '2026-12-07' -> 'Des 2026' (id) or 'Dec 2026' (en): the month and year
   // of a Jakarta calendar day, parsed and formatted in UTC like the other
   // date formatters.
@@ -264,6 +304,8 @@
     penerimaPeriode: penerimaPeriode,
     inisialGrup: inisialGrup,
     giliranPengguna: giliranPengguna,
+    giliranTerdekat: giliranTerdekat,
+    danaArisan: danaArisan,
     formatBulanTahun: formatBulanTahun,
   };
 });

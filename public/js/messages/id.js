@@ -27,6 +27,10 @@
     'home.dueToday': 'Jatuh tempo hari ini',
     'home.pastDue': 'Lewat jatuh tempo {days} hari',
     'home.allPaid': 'Semua iuran lunas',
+    'home.turnCard.title': 'Giliran Anda menerima dana',
+    'home.turnCard.on': 'Pada {date}',
+    'home.turnCard.thisRound': 'Anda menerima dana periode ini',
+    'home.turnCard.today': 'Hari ini',
     'home.newArisan': 'Buat arisan baru',
     'home.newArisanDemo': 'Pembuatan arisan baru hadir bersama akun. Demo ini berisi grup contoh.',
 

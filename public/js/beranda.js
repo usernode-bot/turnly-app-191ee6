@@ -121,6 +121,53 @@
     tombol.hidden = false;
   }
 
+  // ── Your turn to receive: the nearest pot still ahead of the viewer ───────
+  // The counterweight to the payment block: what the group pays out, when,
+  // and how far it has got through its rounds. Read-only, so no button.
+  // Hidden when the viewer is in no group or every turn has passed.
+  function renderGiliran() {
+    var kartu = document.getElementById('giliran-card');
+    var pasangan = demo.arisan
+      .map(function (arisan) {
+        var anggota = app.penggunaAnggota(arisan);
+        return anggota ? { arisan: arisan, anggota: anggota } : null;
+      })
+      .filter(Boolean);
+    var pilihan = d.giliranTerdekat(pasangan, HARI_INI);
+
+    if (!pilihan) {
+      kartu.hidden = true;
+      return;
+    }
+
+    var arisan = pilihan.arisan;
+    var putaran = arisan.periode_aktif.nomor;
+    var totalPutaran = arisan.total_periode;
+    var sisa;
+    if (pilihan.giliran.keadaan === 'sekarang') sisa = t('home.turnCard.thisRound');
+    else if (pilihan.sisaHari <= 0) sisa = t('home.turnCard.today');
+    else sisa = t('home.daysLeft', { days: pilihan.sisaHari });
+
+    document.getElementById('giliran-label').textContent = t('home.turnCard.title');
+    document.getElementById('giliran-nama').textContent = arisan.nama;
+    document.getElementById('giliran-nominal').textContent = d.formatRupiah(pilihan.dana);
+    document.getElementById('giliran-tanggal').textContent = t('home.turnCard.on', {
+      date: d.formatTanggalPendek(pilihan.tanggal, i18n.getLocale()),
+    });
+    document.getElementById('giliran-sisa').textContent = sisa;
+
+    // "Turn 2 of 6", the same words the group screen uses, plus the bar.
+    var progres = t('detail.turnOf', { round: putaran, rounds: totalPutaran });
+    document.getElementById('giliran-progres').textContent = progres;
+    document.getElementById('giliran-bar-isi').style.width = (putaran / totalPutaran * 100) + '%';
+    var bar = document.getElementById('giliran-bar');
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', String(totalPutaran));
+    bar.setAttribute('aria-valuenow', String(putaran));
+    bar.setAttribute('aria-label', progres);
+    kartu.hidden = false;
+  }
+
   // ── Read aloud (Bacakan): the hero block's status, spoken ────────────────
   // Whole sentences built from the same data renderHero shows, one message
   // key each. The amount goes in as plain digits so the voice reads it as a
@@ -251,6 +298,7 @@
   function render() {
     renderGreeting();
     renderHero();
+    renderGiliran();
     renderDaftarArisan();
     renderLanguage();
     renderBacakan();

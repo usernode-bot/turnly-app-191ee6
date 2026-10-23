@@ -39,6 +39,10 @@
     'home.dueToday': 'Due today',
     'home.pastDue': '{days, plural, one{1 day} other{# days}} past due',
     'home.allPaid': 'All your contributions are paid',
+    'home.turnCard.title': 'Your turn to receive',
+    'home.turnCard.on': 'On {date}',
+    'home.turnCard.thisRound': 'You receive it this round',
+    'home.turnCard.today': 'Today',
     'home.newArisan': 'Create new arisan',
     'home.newArisanDemo': 'Creating an arisan arrives with accounts. This demo shows sample groups.',
 
