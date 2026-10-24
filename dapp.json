@@ -16,6 +16,18 @@
       ]
     },
     {
+      "name": "Home shows the payout date and every member's turn",
+      "path": "/",
+      "expectSelector": "#daftar-arisan ol",
+      "expectText": "Turn schedule"
+    },
+    {
+      "name": "Home payout line and schedule render in Indonesian",
+      "path": "/?lang=id",
+      "expectSelector": "#daftar-arisan ol",
+      "expectText": "Jadwal giliran"
+    },
+    {
       "id": "detail.status",
       "name": "Detail arisan renders with the turn circle and status tab",
       "path": "/arisan/demo-kb",

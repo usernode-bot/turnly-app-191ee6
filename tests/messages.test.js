@@ -83,3 +83,16 @@ test('no em dash in any encoding (platform copy rule)', () => {
     }
   }
 });
+
+test('the Home turn schedule has its copy in both files', () => {
+  for (const [name, dict] of Object.entries(files)) {
+    assert.equal(typeof dict['groups.payout'], 'string', `${name}: groups.payout`);
+    assert.deepEqual([...placeholders(dict['groups.payout'])].sort(), ['date', 'name']);
+    assert.deepEqual([...placeholders(dict['groups.payoutYou'])].sort(), ['date']);
+    assert.deepEqual([...placeholders(dict['groups.turnDone'])].sort(), ['round']);
+    assert.equal(typeof dict['groups.schedule'], 'string', `${name}: groups.schedule`);
+  }
+  // The payout line names the recipient, so the old dateless line is gone.
+  assert.equal('groups.recipient' in en, false);
+  assert.equal('groups.recipient' in id, false);
+});
