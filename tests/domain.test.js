@@ -297,3 +297,55 @@ test('the demo past rounds tell the declared payment story', () => {
   assert.deepEqual(joko.status, { key: 'telat', telatHari: 28 });
   assert.ok(rows(k3, 1).every((r) => r.status.key === 'lunas'));
 });
+
+test('jadwalGiliran lists every member in turn order with their turn', () => {
+  const arisan = {
+    periode: 'bulanan',
+    periode_aktif: { nomor: 3, tanggal_jatuh_tempo: '2026-10-07' },
+    // Array order differs from turn order on purpose.
+    anggota: [
+      { id: 'c', urutan_giliran: 3 },
+      { id: 'a', urutan_giliran: 1 },
+      { id: 'e', urutan_giliran: 5 },
+      { id: 'b', urutan_giliran: 2 },
+      { id: 'd', urutan_giliran: 4 },
+    ],
+  };
+  const rows = d.jadwalGiliran(arisan);
+  assert.deepEqual(rows.map((r) => r.anggota.id), ['a', 'b', 'c', 'd', 'e']);
+  assert.deepEqual(rows[0].giliran, { nomor: 1, keadaan: 'lewat', tanggal: null });
+  assert.deepEqual(rows[1].giliran, { nomor: 2, keadaan: 'lewat', tanggal: null });
+  assert.deepEqual(rows[2].giliran, { nomor: 3, keadaan: 'sekarang', tanggal: null });
+  assert.deepEqual(rows[3].giliran, { nomor: 4, keadaan: 'nanti', tanggal: '2026-11-06' }); // 30 days
+  assert.deepEqual(rows[4].giliran, { nomor: 5, keadaan: 'nanti', tanggal: '2026-12-06' });
+});
+
+test('jadwalGiliran spaces a weekly group a week apart, and is empty with no active round', () => {
+  const mingguan = {
+    periode: 'mingguan',
+    periode_aktif: { nomor: 2, tanggal_jatuh_tempo: '2026-10-02' },
+    anggota: [
+      { id: 'a', urutan_giliran: 1 },
+      { id: 'b', urutan_giliran: 2 },
+      { id: 'c', urutan_giliran: 3 },
+      { id: 'd', urutan_giliran: 4 },
+    ],
+  };
+  const rows = d.jadwalGiliran(mingguan);
+  assert.equal(rows[2].giliran.tanggal, '2026-10-09'); // 7 days
+  assert.equal(rows[3].giliran.tanggal, '2026-10-16');
+  assert.deepEqual(d.jadwalGiliran({ anggota: [{ id: 'a', urutan_giliran: 1 }] }), []);
+});
+
+test('the demo monthly schedule puts the viewer two turns after this round', () => {
+  const [kb, k3] = demo.build('2026-10-05').arisan;
+  const kbRows = d.jadwalGiliran(kb);
+  assert.equal(kbRows.length, 10);
+  assert.deepEqual(kbRows.map((r) => r.anggota.nama_tampil)[3], 'Bu Sari');
+  assert.equal(kbRows[3].giliran.keadaan, 'sekarang');
+  const rina = kbRows.find((r) => r.anggota.id === 'demo-kb-a5');
+  assert.deepEqual(rina.giliran, { nomor: 5, keadaan: 'nanti', tanggal: '2026-11-06' });
+  const k3Rows = d.jadwalGiliran(k3);
+  const nia = k3Rows.find((r) => r.anggota.id === 'demo-k3-a4');
+  assert.deepEqual(nia.giliran, { nomor: 4, keadaan: 'nanti', tanggal: '2026-10-16' });
+});

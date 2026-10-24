@@ -215,6 +215,49 @@
     tombol.textContent = suara.isSpeaking() ? t('read.stop') : t('read.start');
   }
 
+  // A turn's date the way the group's rounds are spaced: a short date in a
+  // weekly group ("Oct 25"), month and year in a monthly one ("Nov 2026").
+  function waktuGiliran(arisan, iso) {
+    return arisan.periode === 'mingguan'
+      ? d.formatTanggalPendek(iso, i18n.getLocale())
+      : d.formatBulanTahun(iso, i18n.getLocale());
+  }
+
+  // Every member's turn under one group's row, or null when there is no
+  // active round. Compact lines, in turn order; past turns carry their round
+  // number instead of a date, and the viewer's own name carries the You tag.
+  function kotakJadwal(arisan) {
+    var jadwal = d.jadwalGiliran(arisan);
+    if (!jadwal.length) return null;
+    var kotak = app.el('div', 'px-4 pb-3 pl-[68px]');
+    kotak.appendChild(app.el('p', 'text-small font-medium text-muted', t('groups.schedule')));
+    var ol = app.el('ol', 'text-small');
+    ol.setAttribute('aria-label', t('groups.schedule'));
+    jadwal.forEach(function (baris) {
+      if (!baris.giliran) return;
+      var giliran = baris.giliran;
+      var li = app.el('li', 'flex min-h-7 items-center justify-between gap-2');
+
+      var nama = app.el('span', 'flex min-w-0 items-center gap-2'
+        + (giliran.keadaan === 'lewat' ? ' text-muted'
+          : giliran.keadaan === 'sekarang' ? ' font-medium' : ''));
+      nama.appendChild(app.el('span', 'truncate', baris.anggota.nama_tampil));
+      if (baris.anggota.user_id === app.PENGGUNA_ID) nama.appendChild(app.tagEl(t('tag.you')));
+      li.appendChild(nama);
+
+      if (giliran.keadaan === 'nanti') {
+        li.appendChild(app.el('span', 'shrink-0 tabular-nums', waktuGiliran(arisan, giliran.tanggal)));
+      } else if (giliran.keadaan === 'sekarang') {
+        li.appendChild(app.tagEl(t('turns.current')));
+      } else {
+        li.appendChild(app.el('span', 'shrink-0 text-muted', t('groups.turnDone', { round: giliran.nomor })));
+      }
+      ol.appendChild(li);
+    });
+    kotak.appendChild(ol);
+    return kotak;
+  }
+
   // ── "Arisan Anda": one row per arisan, tap opens Detail ──────────────────
   function renderDaftarArisan() {
     document.getElementById('arisan-anda-label').textContent = t('groups.title');
@@ -271,11 +314,16 @@
         rounds: arisan.total_periode,
       })));
 
-      // Who receives the pot this round (hidden when that is the viewer).
+      // When this round's pot is handed over, and to whom. Unlike the old
+      // "Recipient" line it also shows when the viewer is the recipient.
       var penerima = d.penerimaPeriode(arisan);
-      if (penerima && penerima.id !== milik.anggota.id) {
+      if (penerima) {
+        var tanggalBayar = d.formatTanggalPendek(
+          arisan.periode_aktif.tanggal_jatuh_tempo, i18n.getLocale());
         teks.appendChild(app.el('p', 'text-small text-muted',
-          t('groups.recipient', { name: penerima.nama_tampil })));
+          penerima.id === milik.anggota.id
+            ? t('groups.payoutYou', { date: tanggalBayar })
+            : t('groups.payout', { date: tanggalBayar, name: penerima.nama_tampil })));
       }
 
       var giliran = d.giliranPengguna(arisan, milik.anggota);
@@ -283,7 +331,7 @@
         if (giliran.keadaan === 'nanti') {
           teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurn', {
             round: giliran.nomor,
-            when: d.formatTanggalPendek(giliran.tanggal, i18n.getLocale()),
+            when: waktuGiliran(arisan, giliran.tanggal),
           })));
         } else if (giliran.keadaan === 'sekarang') {
           teks.appendChild(app.el('p', 'text-small text-muted', t('groups.yourTurnNow')));
@@ -298,6 +346,11 @@
       a.appendChild(kiri);
       a.appendChild(app.chipEl(milik.status));
       li.appendChild(a);
+
+      // Every member's turn, under the row and outside its link: reading
+      // only, so the row above stays the one thing that opens the group.
+      var jadwal = kotakJadwal(arisan);
+      if (jadwal) li.appendChild(jadwal);
       ul.appendChild(li);
     });
   }

@@ -205,6 +205,16 @@
     return { nomor: nomor, keadaan: keadaan, tanggal: tanggal };
   }
 
+  // Every member's turn in one arisan, in turn order, for the Home schedule:
+  // [{ anggota, giliran }] where giliran is giliranPengguna's shape. No
+  // active periode, no schedule. Read-only.
+  function jadwalGiliran(arisan) {
+    if (!arisan.periode_aktif) return [];
+    return anggotaUrut(arisan).map(function (anggota) {
+      return { anggota: anggota, giliran: giliranPengguna(arisan, anggota) };
+    });
+  }
+
   // The pot one recipient takes: every member pays the contribution once,
   // so it is the contribution times the number of members, an integer of
   // rupiah like every other amount in this layer.
@@ -346,6 +356,7 @@
     urutkanMenurutStatus: urutkanMenurutStatus,
     inisialGrup: inisialGrup,
     giliranPengguna: giliranPengguna,
+    jadwalGiliran: jadwalGiliran,
     giliranTerdekat: giliranTerdekat,
     danaArisan: danaArisan,
     formatBulanTahun: formatBulanTahun,
